@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+
+<!-- css start -->
+<th:block layout:fragment="css">
+    <link th:href="@{/css/account.css}" rel="stylesheet" />
+</th:block>
+<!-- css end -->
+
+<!-- js start -->
+<th:block layout:fragment="script">
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+</th:block>
+<!-- js end -->
+
+<!-- content start -->
+<div layout:fragment="content" class="container-xxl d-flex justify-content-center">
+    <script th:if="${error}" th:inline="javascript">
+        /*<![CDATA[*/
+        alert([[${exception}]]);
+        /*]]>*/
+    </script>
+    <div class="account-box text-center">
+        <div class="title">회원가입</div>
+        <form th:action="@{/api/v1/member/signup}" th:object="${addMember}" method="post" onsubmit="return validateForm()">
+            <div>
+                <input type="text" id="username" th:field="*{username}" class="form-control" placeholder="아이디" required>
+                <button type="button" onclick="checkUsername()">중복확인</button>
+            </div>
+            <input type="password" id="password" th:field="*{password}" class="form-control signup-password" placeholder="비밀번호" required>
+            <div class="password-hint">영문 대·소문자/숫자/특수문자 중 2가지 이상 조합, 8자~32자</div>
+            <input type="password" id="password2" class="form-control" placeholder="비밀번호 확인" required>
+            <input type="email" id="email" th:field="*{email}" class="form-control" placeholder="이메일" required>
+            <input type="tel" id="phone" th:field="*{phone}" class="form-control" placeholder="연락처" required>
+            <button type="submit" id="signupButton">회원가입</button>
+        </form>
+        <script th:inline="javascript">
+            var isUsername = false;
+
+            //input username이 변경될 때 실행
+            $(document).ready(function() {
+                $('#username').on('input', function() {
+                    isUsername = false;
+                });
+            });
+
+            function checkUsername() {
+                var username = document.getElementById('username').value;
+
+                //아이디가 입력되지 않은 경우
+                if (username.trim() === '') {
+                    alert('아이디를 입력하세요.');
+                    return;
+                }
+
+                //공백 혹은 특수문자가 있는 경우
+                if(username.search(/\W|\s/g) > -1){
+                    alert( '특수문자 또는 공백이 입력되었습니다.');
+                    return;
+                }
+
+                $.ajax({
+                    type: 'GET',
+                    url: '/api/v1/member/username/' + username,
+                    success: function (data) {
+                        if (data.isAvailable) {
+                            // 중복되지 않은 경우
+                            alert('사용 가능한 아이디입니다.');
+                            $('#username').prop('readonly', true);
+                            isUsername = true;
+                        } else {
+                            // 중복된 경우
+                            alert('이미 사용 중인 아이디입니다.');
+                        }
+                    },
+                    error: function () {
+                        console.error('중복 체크 실패');
+                    }
+                });
+            }
+
+            function checkPassword() {
+                var pwd1 = document.getElementById('password').value;
+                var pwd2 = document.getElementById('password2').value;
+
+                var passwordPattern = /^(?=.*[A-Za-z])(?=.*\d|.*[!@#$%^&*()_+])[A-Za-z\d!@#$%^&*()_+]{8,32}$/;
+                if (!passwordPattern.test(pwd1)) {
+                    alert('비밀번호가 유효하지 않습니다.');
+                    return;
+                }
+
+                if (pwd1 !== pwd2) {
+                    alert('비밀번호가 일치하지 않습니다.');
+                    return;
+                }
+
+                return true;
+            }
+
+            function checkEmail() {
+                var email = document.getElementById('email').value;
+
+                if (email.trim() === '') {
+                    alert('이메일을 입력하세요.');
+                    return false;
+                }
+                return true;
+            }
+
+            function checkPhone() {
+                var phoneInput = document.getElementById('phone');
+                var phone = phoneInput.value;
+
+                if (phone.trim() === '') {
+                    alert('연락처를 입력하세요.');
+                    return false;
+                }
+
+                phoneInput.value = removeHyphen(phone);
+
+                return true;
+            }
+
+            function removeHyphen(phoneNumber) {
+                // "-"를 모두 제거하여 반환
+                return phoneNumber.replace(/-/g, '');
+            }
+
+            function validateForm() {
+                if (!isUsername) {
+                    alert('아이디 중복확인을 해주세요.');
+                    return false;
+                }
+
+                if (!checkPassword()) {
+                    return false;
+                }
+
+                if (!checkEmail()) {
+                    return false;
+                }
+
+                if (!checkPhone()) {
+                    return false;
+                }
+
+                return true;
+            }
+        </script>
+    </div>
+</div>
+<!-- content end -->
+
+</html>

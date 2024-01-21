@@ -1,0 +1,21 @@
+/* =================== plan list =================== */
+.plan-list-title {
+    color: #000;
+    text-align: center;
+    font-family: Inter;
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: 2.88px;
+}
+
+.plan-list-title span {
+    color: #3549FF;
+    font-family: Inter;
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: 2.88px;
+}

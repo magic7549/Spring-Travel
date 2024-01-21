@@ -1,0 +1,111 @@
+.account-box {
+    width: 700px;
+
+    margin-top: 80px;
+
+    border-radius: 6px;
+    border: 2px solid #C8C8C8;
+    background: #D9D9D9;
+}
+
+.account-box .title {
+    margin-top: 20px;
+    margin-bottom: 32px;
+
+    color: #515151;
+    text-align: center;
+    font-family: Inter;
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: 2.88px;
+}
+
+.account-box input {
+    margin-bottom: 20px;
+
+    width: 420px;
+    height: 38px;
+    display: inline;
+}
+
+.account-box button {
+    margin-bottom: 20px;
+
+    width: 420px;
+    height: 38px;
+    display: inline;
+    border-radius: 6px;
+    border: 2px solid #2036FF;
+    background: #3549FF;
+
+    color: #FFF;
+    text-align: center;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 1.28px;
+}
+
+.account-box .login-menu {
+    margin-bottom: 20px;
+}
+
+.account-box a {
+    color: #7E7E7E;
+    text-align: center;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 1.28px;
+}
+
+.account-box div input {
+    margin-bottom: 20px;
+    margin-right: 6px;
+
+    width: 312px;
+    height: 38px;
+    display: inline;
+}
+
+.account-box div button {
+    margin-bottom: 20px;
+
+    width: 96px;
+    height: 38px;
+    display: inline;
+    border-radius: 6px;
+    border: 2px solid #C8C8C8;
+    background: #FFF;
+
+    color: #979797;
+    text-align: center;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 1.28px;
+}
+
+.account-box .signup-password {
+    margin-bottom: 5px;
+}
+
+.account-box .password-hint {
+    margin-bottom: 20px;
+
+    color: #787878;
+    font-family: Inter;
+    font-size: 14px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+    letter-spacing: 1.12px;
+}

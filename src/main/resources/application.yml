@@ -1,0 +1,29 @@
+spring:
+  jpa:
+    show-sql: true
+    hibernate:
+      ddl-auto: none
+      naming:
+        physical-strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
+
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/traeblue?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8
+    username: root
+    password: 1234
+
+  h2:
+    console:
+      enabled: true
+
+  devtools:
+    livereload:
+      enabled: true
+
+  redis:
+    host: localhost
+    port: 6379
+
+jwt:
+  secret:
+    key: EWFG8g4468df4ghfdSDLIH153125IHOG3425dsfueiwgf

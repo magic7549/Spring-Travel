@@ -1,0 +1,24 @@
+.home-title-container {
+    height: 800px;
+}
+
+.home-title-text {
+    color: #FFF;
+    font-family: Inter;
+    font-size: 64px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: 5.12px;
+}
+
+.home-title-start-btn {
+    margin-top: 20px;
+
+    color: #FFF;
+    font-family: Inter;
+    font-size: 40px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}

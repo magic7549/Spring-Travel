@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+
+<!-- css start -->
+<th:block layout:fragment="css">
+    <link th:href="@{/css/plan.css}" rel="stylesheet" />
+</th:block>
+<!-- css end -->
+
+<!-- js start -->
+<!-- js end -->
+
+<!-- content start -->
+<div layout:fragment="content" class="container-xxl d-flex justify-content-center">
+    <div class="plan-list-title">마이<span>플랜</span></div>
+</div>
+<!-- content end -->
+
+</html>
