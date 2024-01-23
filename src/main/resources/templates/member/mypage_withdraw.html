@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+
+<!-- css start -->
+<th:block layout:fragment="css">
+    <link th:href="@{/css/account.css}" rel="stylesheet" />
+</th:block>
+<!-- css end -->
+
+<!-- js start -->
+<th:block layout:fragment="script">
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+</th:block>
+<!-- js end -->
+
+<!-- content start -->
+<div layout:fragment="content" class="container-xxl">
+    <div class="row mypage-container">
+        <!-- 좌측 메뉴 -->
+        <div class="col-3">
+            <div class="card">
+                <div class="card-header mypage-menu-title">
+                    <i class="bi bi-person-circle"></i> 마이페이지
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">
+                        <a th:href="@{/member/mypage/password}" class="inactive-menu"><i class="bi bi-chevron-right"></i> 비밀번호 변경</a>
+                    </li>
+                    <li class="list-group-item">
+                        <span class="active-menu">회원 탈퇴</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <!-- 메인 콘텐츠    -->
+        <div class="col-9">
+            <div class="card mypage-main">
+                <div class="card-header title">
+                    회원 탈퇴
+                </div>
+                <div class="card-body">
+                    <input type="text" id="username" class="form-control" th:value="${#authentication.name}" readonly>
+                    <input type="password" id="password" class="form-control" placeholder="비밀번호" required>
+                    <button type="button" class="btn btn-danger" onclick="changePasswordButton()">탈퇴하기</button>
+                    <script th:inline="javascript">
+                        function changePasswordButton() {
+                            var password = document.getElementById('password').value;
+
+                            // 비밀번호가 입력되지 않은 경우
+                            if (password.trim() === '') {
+                                alert('비밀번호를 입력하세요.');
+                                return;
+                            }
+
+                            var isConfirmed = confirm('정말로 회원 탈퇴하시겠습니까?');
+                            if (isConfirmed) {
+                                var data = {
+                                    username: $('#username').val(),
+                                    password: $('#password').val()
+                                };
+
+                                $.ajax({
+                                    type: 'DELETE',
+                                    url: '/api/v1/member/delete',
+                                    contentType: 'application/json',
+                                    data: JSON.stringify(data),
+                                    success: function (response) {
+                                        if (response.isSuccess) {
+                                            alert('회원 탈퇴에 성공하였습니다.');
+                                            window.location.href = '/';
+                                        }
+                                    },
+                                    error: function (error) {
+                                        alert(error.responseJSON.msg);
+                                    }
+                                });
+                            }
+                        }
+                    </script>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- content end -->
+
+</html>

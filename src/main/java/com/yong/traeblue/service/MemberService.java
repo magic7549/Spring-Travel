@@ -84,4 +84,16 @@ public class MemberService {
             throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.WRONG_PASSWORD);
         }
     }
+
+    // 회원 탈퇴
+    public boolean withdrawMember(String username, String password) {
+        Member member = memberRepository.findByUsername(username).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_MEMBER));
+
+        if (bCryptPasswordEncoder.matches(password, member.getPassword())) {
+            memberRepository.delete(member);
+            return true;
+        } else {
+            throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.WRONG_PASSWORD);
+        }
+    }
 }

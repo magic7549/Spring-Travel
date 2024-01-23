@@ -54,9 +54,7 @@
                         window.location.href = '/member/login';
                     },
                     error: function (error) {
-                        if (error.status === 400) {
-                            alert(error.responseJSON.msg);
-                        }
+                        alert(error.responseJSON.msg);
                     }
                 });
             }

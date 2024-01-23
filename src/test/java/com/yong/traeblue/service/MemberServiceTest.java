@@ -272,4 +272,63 @@ class MemberServiceTest {
             }
         }
     }
+
+    @DisplayName("회원 탈퇴 테스트")
+    @Nested
+    class WithdrawMemberTests {
+        @DisplayName("비밀번호 변경 성공")
+        @Test
+        public void withdrawMemberSuccess() {
+            //given
+            when(memberRepository.findByUsername("test")).thenReturn(Optional.ofNullable(Member.builder()
+                    .username("test")
+                    .password("$2a$10$eVIuyJVT/JfHCd85Stosh.m/sJna.czphUnf.0VEdTuiK.DjENrnq")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build()));
+            when(bCryptPasswordEncoder.matches(anyString(), anyString())).thenReturn(true);
+
+            //when
+            boolean isSuccess = memberService.withdrawMember("test", "qwer1234");
+
+            //then
+            assertThat(isSuccess).isTrue();
+        }
+
+        @DisplayName("비밀번호 변경 실패 - 아이디 존재 X")
+        @Test
+        public void withdrawMemberFailUsername() {
+            //given
+            when(memberRepository.findByUsername("test")).thenThrow(new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_MEMBER));
+
+            //when
+            try {
+                boolean isSuccess = memberService.withdrawMember("test", "qwer1234");
+            } catch (CustomException e) {
+                //then
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_EXISTED_MEMBER);
+            }
+        }
+
+        @DisplayName("비밀번호 변경 실패 - 비밀번호 일치 X")
+        @Test
+        public void withdrawMemberFailPassword() {
+            //given
+            when(memberRepository.findByUsername("test")).thenReturn(Optional.ofNullable(Member.builder()
+                    .username("test")
+                    .password("$2a$10$eVIuyJVT/JfHCd85Stosh.m/sJna.czphUnf.0VEdTuiK.DjENrnq")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build()));
+            when(bCryptPasswordEncoder.matches(anyString(), anyString())).thenReturn(false);
+
+            //when
+            try {
+                boolean isSuccess = memberService.withdrawMember("test", "qwer1234");
+            } catch (CustomException e) {
+                //then
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.WRONG_PASSWORD);
+            }
+        }
+    }
 }

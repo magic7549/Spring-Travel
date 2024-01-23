@@ -1,16 +1,16 @@
 package com.yong.traeblue.controller.member;
 
+import com.yong.traeblue.config.exception.CustomException;
+import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.config.jwt.JWTUtil;
-import com.yong.traeblue.dto.member.AddMemberRequestDto;
-import com.yong.traeblue.dto.member.ChangePasswordRequestDto;
-import com.yong.traeblue.dto.member.FindPasswordRequestDto;
-import com.yong.traeblue.dto.member.FindUsernameRequestDto;
+import com.yong.traeblue.dto.member.*;
 import com.yong.traeblue.repository.RefreshTokenRepository;
 import com.yong.traeblue.service.MemberService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,8 +36,8 @@ public class MemberApiController {
 
     // 회원가입
     @PostMapping("/signup")
-    public ResponseEntity<Map<String, Boolean>> signup(@RequestBody AddMemberRequestDto addMember) {
-        if (memberService.save(addMember.getUsername(), addMember.getPassword(), addMember.getEmail(), addMember.getPhone()))
+    public ResponseEntity<Map<String, Boolean>> signup(@RequestBody AddMemberRequestDto request) {
+        if (memberService.save(request.getUsername(), request.getPassword(), request.getEmail(), request.getPhone()))
             return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", true));
         else
             return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", false));
@@ -59,21 +59,14 @@ public class MemberApiController {
 
     // 비밀번호 변경
     @PutMapping("/password")
-    public ResponseEntity<Map<String, Boolean>> changePassword(HttpServletRequest request, @RequestBody ChangePasswordRequestDto passwordDto) {
-        // access 쿠키에서 username 추출
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("access")) {
-                    String accessValue = cookie.getValue();
-                    String username = jwtUtil.getUsername(accessValue);
-
-                    boolean isSuccess = memberService.changePassword(passwordDto.getCurrentPassword(), passwordDto.getNewPassword(), username);
-                    return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
-                }
-            }
+    public ResponseEntity<Map<String, Boolean>> changePassword(@CookieValue(name = "access", required = false) String accessToken, @RequestBody ChangePasswordRequestDto passwordDto) {
+        if (accessToken == null) {
+            throw new CustomException(HttpStatus.UNAUTHORIZED, ErrorCode.ACCESS_DENIED);
         }
-        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", false));
+
+        String username = jwtUtil.getUsername(accessToken);
+        boolean isSuccess = memberService.changePassword(passwordDto.getCurrentPassword(), passwordDto.getNewPassword(), username);
+        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
     }
 
     // 로그아웃
@@ -102,5 +95,28 @@ public class MemberApiController {
         }
 
         response.sendRedirect("/");
+    }
+
+    // 회원 탈퇴
+    @DeleteMapping("/delete")
+    public ResponseEntity<Map<String, Boolean>> withdraw(@RequestBody WithdrawMemberRequestDto request, HttpServletResponse response, @CookieValue(name = "refresh") String refresh) {
+        if (memberService.withdrawMember(request.getUsername(), request.getPassword())) {
+            // access 쿠키 삭제
+            Cookie accessCookie = new Cookie("access", null);
+            accessCookie.setMaxAge(0);
+            accessCookie.setPath("/");
+            response.addCookie(accessCookie);
+
+            // refresh 쿠키 삭제
+            refreshTokenRepository.deleteById(refresh);
+            Cookie refreshCookie = new Cookie("refresh", null);
+            refreshCookie.setMaxAge(0);
+            refreshCookie.setPath("/");
+            response.addCookie(refreshCookie);
+
+            return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", true));
+        }
+        else
+            return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", false));
     }
 }

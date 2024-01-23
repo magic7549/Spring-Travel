@@ -1,11 +1,8 @@
 package com.yong.traeblue.controller.member;
 
-import com.yong.traeblue.dto.member.AddMemberRequestDto;
 import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 @RequestMapping("/member")
@@ -31,8 +28,13 @@ public class MemberViewController {
         return "member/signup";
     }
 
-    @GetMapping("/mypage")
-    public String mypage() {
+    @GetMapping("/mypage/password")
+    public String changePassword() {
         return "member/mypage_password";
+    }
+
+    @GetMapping("/mypage/withdraw")
+    public String memberWithdraw() {
+        return "member/mypage_withdraw";
     }
 }

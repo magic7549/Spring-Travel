@@ -4,10 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.domain.Member;
-import com.yong.traeblue.dto.member.AddMemberRequestDto;
-import com.yong.traeblue.dto.member.ChangePasswordRequestDto;
-import com.yong.traeblue.dto.member.FindPasswordRequestDto;
-import com.yong.traeblue.dto.member.FindUsernameRequestDto;
+import com.yong.traeblue.dto.member.*;
 import com.yong.traeblue.repository.MemberRepository;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +34,8 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.net.URLEncoder;
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.springframework.restdocs.cookies.CookieDocumentation.cookieWithName;
 import static org.springframework.restdocs.cookies.CookieDocumentation.responseCookies;
@@ -471,62 +470,75 @@ public class MemberTest {
         }
     }
 
-    @DisplayName("로그인 성공")
-    @Test
-    public void loginSuccess() throws Exception {
-        //given
-        memberRepository.save(Member.builder()
-                .username("test")
-                .password(bCryptPasswordEncoder.encode("password123"))
-                .email("test@test.com")
-                .phone("01012345678")
-                .build());
+    @DisplayName("로그인 테스트")
+    @Nested
+    class LoginTests {
+        @DisplayName("로그인 성공")
+        @Test
+        public void loginSuccess() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password(bCryptPasswordEncoder.encode("password123"))
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
 
-        //when
-        ResultActions result = mockMvc.perform(post("/api/v1/member/login")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("username", "test")
-                .param("password", "password123"));
+            Map<String, String> requestDto = new HashMap<String, String>();
+            requestDto.put("username", "test");
+            requestDto.put("password", "password123");
+            String body = objectMapper.writeValueAsString(requestDto);
 
-        //then
-        result
-                .andExpect(status().is3xxRedirection())
-                .andExpect(cookie().exists("access"))
-                .andExpect(cookie().exists("refresh"))
-                .andDo(document("member/login",
-                        Preprocessors.preprocessRequest(prettyPrint()),
-                        Preprocessors.preprocessResponse(prettyPrint()),
-                        formParameters(
-                                parameterWithName("username").description("아이디"),
-                                parameterWithName("password").description("비밀번호")
-                        ),
-                        responseCookies(
-                                cookieWithName("access").description("access 토큰"),
-                                cookieWithName("refresh").description("refresh 토큰")
-                        )));
-    }
+            //when
+            ResultActions result = mockMvc.perform(put("/api/v1/member/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
 
-    @DisplayName("로그인 실패")
-    @Test
-    public void loginFail() throws Exception {
-        //given
-        memberRepository.save(Member.builder()
-                .username("test")
-                .password(bCryptPasswordEncoder.encode("password123"))
-                .email("test@test.com")
-                .phone("01012345678")
-                .build());
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(cookie().exists("access"))
+                    .andExpect(cookie().exists("refresh"))
+                    .andDo(document("member/login",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("username").description("아이디"),
+                                    fieldWithPath("password").description("비밀번호")
+                            ),
+                            responseCookies(
+                                    cookieWithName("access").description("access 토큰"),
+                                    cookieWithName("refresh").description("refresh 토큰")
+                            )));
+        }
 
-        //when
-        ResultActions result = mockMvc.perform(post("/api/v1/member/login")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("username", "test")
-                .param("password", "123"));
+        @DisplayName("로그인 실패")
+        @Test
+        public void loginFail() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password(bCryptPasswordEncoder.encode("password123"))
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
 
-        //then
-        result
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/member/login?error=true&exception=" + URLEncoder.encode("아이디 또는 비밀번호가 맞지 않습니다.", "UTF-8")));
+            Map<String, String> requestDto = new HashMap<String, String>();
+            requestDto.put("username", "asdf");
+            requestDto.put("password", "qwerty1234");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            //when
+            ResultActions result = mockMvc.perform(put("/api/v1/member/login")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("INVALID_LOGIN"))
+                    .andExpect(jsonPath("$.msg").value("아이디 또는 비밀번호가 맞지 않습니다."));
+        }
     }
 
     @DisplayName("로그아웃")
@@ -542,5 +554,82 @@ public class MemberTest {
                 .andExpect(redirectedUrl("/"));
     }
 
+    @DisplayName("회원 탈퇴 테스트")
+    @Nested
+    class WithdrawMemberTests {
+        @DisplayName("회원 탈퇴 성공")
+        @WithMockUser
+        @Test
+        public void withdrawSuccess() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password(bCryptPasswordEncoder.encode("123123123a"))
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
 
+            WithdrawMemberRequestDto requestDto = new WithdrawMemberRequestDto();
+            requestDto.setUsername("test");
+            requestDto.setPassword("123123123a");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            String refreshToken = jwtUtil.createRefresh("test", "ROLE_USER");
+            Cookie refreshCookie = new Cookie("refresh", refreshToken);
+
+            //when
+            ResultActions result = mockMvc.perform(delete("/api/v1/member/delete")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(refreshCookie));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andDo(document("member/delete",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("username").description("아이디"),
+                                    fieldWithPath("password").description("비밀번호")
+                            ),
+                            responseFields(
+                                    fieldWithPath("isSuccess").description("회원 탈퇴 성공 여부")
+                            )));
+        }
+
+        @DisplayName("회원 탈퇴 실패")
+        @WithMockUser
+        @Test
+        public void withdrawFail() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password(bCryptPasswordEncoder.encode("123123123a"))
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
+
+            WithdrawMemberRequestDto requestDto = new WithdrawMemberRequestDto();
+            requestDto.setUsername("test");
+            requestDto.setPassword("qwer1234");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            String refreshToken = jwtUtil.createRefresh("test", "ROLE_USER");
+            Cookie refreshCookie = new Cookie("refresh", refreshToken);
+
+            //when
+            ResultActions result = mockMvc.perform(delete("/api/v1/member/delete")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(refreshCookie));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("WRONG_PASSWORD"))
+                    .andExpect(jsonPath("$.msg").value("비밀번호가 일치하지 않습니다."));
+        }
+    }
 }

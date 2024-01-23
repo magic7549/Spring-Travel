@@ -158,20 +158,3 @@
 .mypage-container .mypage-main .password-hint {
     margin-bottom: 20px;
 }
-
-.mypage-container .mypage-main button {
-        height: 38px;
-        display: inline;
-        border-radius: 6px;
-        border: 2px solid #2036FF;
-        background: #3549FF;
-
-        color: #FFF;
-        text-align: center;
-        font-family: Inter;
-        font-size: 16px;
-        font-style: normal;
-        font-weight: 400;
-        line-height: normal;
-        letter-spacing: 1.28px;
-}

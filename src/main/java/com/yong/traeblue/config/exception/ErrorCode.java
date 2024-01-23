@@ -13,6 +13,8 @@ public enum ErrorCode {
     INVALID_LOGIN("INVALID_LOGIN", "아이디 또는 비밀번호가 맞지 않습니다."),
     DUPLICATED_USERNAME("DUPLICATED_USERNAME", "이미 등록되어 있는 아이디입니다."),
     DUPLICATED_EMAIL("DUPLICATED_EMAIL", "이미 등록되어 있는 이메일입니다."),
+
+    // 401 error
     ACCESS_DENIED("ACCESS_DENIED", "유효하지 않은 요청입니다.");
 
     private final String code;

@@ -3,10 +3,11 @@
 :icons: font
 :source-highlighter: highlightjs
 :toc: left
-:toclevels: 3
+:toclevels: 2
 
 === 아이디 중복 확인
 ==== Request
+operation::member/signup/username[snippets="http-request"]
 operation::member/signup/username[snippets="path-parameters"]
 
 ==== Response
@@ -23,6 +24,17 @@ operation::member/signup[snippets="request-fields"]
 ==== Response
 operation::member/signup[snippets="http-response"]
 operation::member/signup[snippets="response-fields"]
+---
+
+
+=== 로그인
+==== Request
+operation::member/login[snippets="http-request"]
+operation::member/login[snippets="request-fields"]
+
+==== Response
+operation::member/login[snippets="http-response"]
+operation::member/login[snippets="response-cookies"]
 ---
 
 
@@ -59,13 +71,16 @@ operation::member/password[snippets="response-fields"]
 ---
 
 
-=== 로그인
+=== 회원 탈퇴
 ==== Request
-operation::member/login[snippets="http-request"]
-operation::member/login[snippets="form-parameters"]
+operation::member/delete[snippets="http-request"]
+operation::member/delete[snippets="request-fields"]
 
 ==== Response
-operation::member/login[snippets="response-cookies"]
+operation::member/delete[snippets="http-response"]
+operation::member/delete[snippets="response-fields"]
 ---
+
+
 
 

@@ -111,8 +111,8 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
             response.setCharacterEncoding("UTF-8");
             response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
         }  else {
-            // 400 에러 코드 설정
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            // 401 에러 코드 설정
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
 
             Map<String, String> errorResponse = new HashMap<>();
             errorResponse.put("code", ErrorCode.ACCESS_DENIED.getCode());
