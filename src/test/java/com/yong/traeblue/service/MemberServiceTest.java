@@ -6,6 +6,7 @@ import com.yong.traeblue.repository.MemberRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.jdbc.EmbeddedDatabaseConnection;
@@ -16,7 +17,6 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
@@ -30,11 +30,13 @@ class MemberServiceTest {
     @Mock
     BCryptPasswordEncoder bCryptPasswordEncoder;
 
+    @InjectMocks
+    MemberService memberService;
+
     @DisplayName("멤버 저장 - 성공")
     @Test
     public void saveMember() {
         //given
-        MemberService memberService = new MemberService(memberRepository, bCryptPasswordEncoder);
         AddMemberRequestDto request = new AddMemberRequestDto();
         request.setUsername("test");
         request.setPassword("123123123a");
@@ -54,7 +56,6 @@ class MemberServiceTest {
     @Test
     public void saveMemberDuplicate() {
         //given
-        MemberService memberService = new MemberService(memberRepository, bCryptPasswordEncoder);
         AddMemberRequestDto request = new AddMemberRequestDto();
         request.setUsername("test");
         request.setPassword("123123123a");
@@ -74,7 +75,6 @@ class MemberServiceTest {
     @Test
     public void existsUsername() {
         //given
-        MemberService memberService = new MemberService(memberRepository, bCryptPasswordEncoder);
         String username = "tester";
         when(memberRepository.existsByUsername(username)).thenReturn(true);
 
@@ -89,7 +89,6 @@ class MemberServiceTest {
     @Test
     public void findUsername() {
         //given
-        MemberService memberService = new MemberService(memberRepository, bCryptPasswordEncoder);
         String email = "test@test.com";
         String phone = "01012345678";
         when(memberRepository.findByEmailAndPhone(email, phone)).thenReturn(Optional.ofNullable(Member.builder()
@@ -110,7 +109,6 @@ class MemberServiceTest {
     @Test
     public void tempPassword() {
         //given
-        MemberService memberService = new MemberService(memberRepository, bCryptPasswordEncoder);
         String username = "test";
         String email = "test@test.com";
         String phone = "01012345678";
@@ -126,5 +124,28 @@ class MemberServiceTest {
 
         //then
         assertThat(tempPassword).isNotEqualTo("123123123a");
+    }
+
+    @DisplayName("비밀번호 변경")
+    @Test
+    public void changePassword() {
+        //given
+        String username = "test";
+        String email = "test@test.com";
+        String phone = "01012345678";
+
+        when(bCryptPasswordEncoder.matches(anyString(), anyString())).thenReturn(true);
+        when(memberRepository.findByUsername(username)).thenReturn(Member.builder()
+                .username("test")
+                .password("$2a$10$eVIuyJVT/JfHCd85Stosh.m/sJna.czphUnf.0VEdTuiK.DjENrnq")
+                .email("test@test.com")
+                .phone("01012345678")
+                .build());
+
+        //when
+        boolean isChangeSuccess = memberService.changePassword("123123123a", "11223344aa", username);
+
+        //then
+        assertThat(isChangeSuccess).isTrue();
     }
 }

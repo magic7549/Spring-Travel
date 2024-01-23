@@ -45,8 +45,6 @@ public class JWTFilter extends OncePerRequestFilter {
 
             // refresh 토큰이 만료되었을 경우
             if (jwtUtil.isExpired(refreshValue)) {
-                System.out.println("refreshValue isExpired");
-
                 Cookie cookie = new Cookie("access", null);
                 cookie.setMaxAge(0);
                 cookie.setPath("/");
@@ -62,12 +60,8 @@ public class JWTFilter extends OncePerRequestFilter {
             }
 
             boolean existsRefresh = refreshTokenRepository.existsById(refreshValue);
-            System.out.println("existsRefresh : " + existsRefresh);
-
             // refreshToken이 존재
             if (existsRefresh) {
-                System.out.println("refreshToken isPresent");
-
                 // access 쿠키 재발급
                 accessToken = jwtUtil.createAccess(jwtUtil.getUsername(refreshValue), jwtUtil.getRole(refreshValue));
                 Cookie cookie = new Cookie("access", accessToken);
@@ -77,8 +71,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 cookie.setPath("/");
                 response.addCookie(cookie);
             } else {
-                System.out.println("refreshToken not present");
-
                 Cookie cookie = new Cookie("access", null);
                 cookie.setMaxAge(0);
                 cookie.setPath("/");

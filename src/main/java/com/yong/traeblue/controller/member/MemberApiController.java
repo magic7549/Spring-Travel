@@ -1,6 +1,8 @@
 package com.yong.traeblue.controller.member;
 
+import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.dto.member.AddMemberRequestDto;
+import com.yong.traeblue.dto.member.ChangePasswordRequestDto;
 import com.yong.traeblue.dto.member.FindPasswordRequestDto;
 import com.yong.traeblue.dto.member.FindUsernameRequestDto;
 import com.yong.traeblue.repository.RefreshTokenRepository;
@@ -25,6 +27,7 @@ import java.util.Map;
 public class MemberApiController {
     private final MemberService memberService;
     private final RefreshTokenRepository refreshTokenRepository;
+    private final JWTUtil jwtUtil;
 
     // 아이디 중복체크
     @ResponseBody
@@ -53,8 +56,7 @@ public class MemberApiController {
         String username = memberService.findUsername(request.getEmail(), request.getPhone());
         if (username != null) {
             return ResponseEntity.ok().body(Collections.singletonMap("username", username));
-        }
-        else {
+        } else {
             return ResponseEntity.notFound().build();
         }
     }
@@ -66,8 +68,7 @@ public class MemberApiController {
         String tempPassword = memberService.tempPassword(request.getUsername(), request.getEmail(), request.getPhone());
         if (tempPassword != null) {
             return ResponseEntity.ok().body(Collections.singletonMap("tempPassword", tempPassword));
-        }
-        else {
+        } else {
             return ResponseEntity.notFound().build();
         }
     }
@@ -93,10 +94,30 @@ public class MemberApiController {
                     cookie.setMaxAge(0);
                     cookie.setPath("/");
                     response.addCookie(cookie);
-                } 
+                }
             }
         }
 
         response.sendRedirect("/");
+    }
+
+    // 비밀번호 변경
+    @ResponseBody
+    @PutMapping("/password")
+    public ResponseEntity<Map<String, Boolean>> changePassword(HttpServletRequest request, ChangePasswordRequestDto passwordDto) {
+        // access 쿠키에서 username 추출
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("access")) {
+                    String accessValue = cookie.getValue();
+                    String username = jwtUtil.getUsername(accessValue);
+
+                    boolean isSuccess = memberService.changePassword(passwordDto.getCurrentPassword(), passwordDto.getNewPassword(), username);
+                    return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
+                }
+            }
+        }
+        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", false));
     }
 }

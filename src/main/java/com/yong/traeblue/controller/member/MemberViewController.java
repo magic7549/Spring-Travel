@@ -1,7 +1,6 @@
 package com.yong.traeblue.controller.member;
 
 import com.yong.traeblue.dto.member.AddMemberRequestDto;
-import com.yong.traeblue.dto.member.FindUsernameRequestDto;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,10 +13,10 @@ public class MemberViewController {
 
     @GetMapping("/login")
     public String login(@RequestParam(value = "error", required = false) String error,
-                        @RequestParam(value = "exception", required = false) String exception,
+                        @RequestParam(value = "com/yong/traeblue/config/exception", required = false) String exception,
                         Model model) {
         model.addAttribute("error", error);
-        model.addAttribute("exception", exception);
+        model.addAttribute("com/yong/traeblue/config/exception", exception);
 
         return "member/login";
     }
@@ -34,12 +33,17 @@ public class MemberViewController {
 
     @GetMapping("/signup")
     public String signup(@RequestParam(value = "error", required = false) String error,
-                         @RequestParam(value = "exception", required = false) String exception,
+                         @RequestParam(value = "com/yong/traeblue/config/exception", required = false) String exception,
                          Model model, AddMemberRequestDto addMember) {
         model.addAttribute("addMember", addMember);
         model.addAttribute("error", error);
-        model.addAttribute("exception", exception);
+        model.addAttribute("com/yong/traeblue/config/exception", exception);
 
         return "member/signup";
+    }
+
+    @GetMapping("/mypage")
+    public String mypage() {
+        return "member/mypage_password";
     }
 }

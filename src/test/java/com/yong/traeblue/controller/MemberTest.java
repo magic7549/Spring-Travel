@@ -1,9 +1,11 @@
 package com.yong.traeblue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.dto.member.AddMemberRequestDto;
 import com.yong.traeblue.repository.MemberRepository;
+import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -60,6 +62,9 @@ public class MemberTest {
 
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    private JWTUtil jwtUtil;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -325,5 +330,72 @@ public class MemberTest {
         result
                 .andExpect(status().is3xxRedirection())
                 .andExpect(redirectedUrl("/"));
+    }
+
+    @DisplayName("비밀번호 변경")
+    @WithMockUser
+    @Test
+    public void changePassword() throws Exception {
+        //given
+        memberRepository.save(Member.builder()
+                .username("test")
+                .password(bCryptPasswordEncoder.encode("123123123a"))
+                .email("test@test.com")
+                .phone("01012345678")
+                .build());
+
+        String accessToken = jwtUtil.createAccess("test", "ROLE_USER");
+        Cookie accessCookie = new Cookie("access", accessToken);
+
+        //when
+        ResultActions result = mockMvc.perform(put("/api/v1/member/password")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .cookie(accessCookie)
+                .param("currentPassword", "123123123a")
+                .param("newPassword", "11223344aa"));
+
+        //then
+        result
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.isSuccess").value(true))
+                .andDo(document("member/password",
+                        Preprocessors.preprocessRequest(prettyPrint()),
+                        Preprocessors.preprocessResponse(prettyPrint()),
+                        formParameters(
+                                parameterWithName("currentPassword").description("현재 비밀번호"),
+                                parameterWithName("newPassword").description("새로운 비밀번호")
+                        ),
+                        responseFields(
+                                fieldWithPath("isSuccess").description("비밀번호 변경 성공 여부").type(JsonFieldType.BOOLEAN)
+                        )));
+    }
+
+    @DisplayName("비밀번호 변경 실패")
+    @WithMockUser
+    @Test
+    public void changePasswordFail() throws Exception {
+        //given
+        memberRepository.save(Member.builder()
+                .username("test")
+                .password(bCryptPasswordEncoder.encode("123123123a"))
+                .email("test@test.com")
+                .phone("01012345678")
+                .build());
+
+        String accessToken = jwtUtil.createAccess("test", "ROLE_USER");
+        Cookie accessCookie = new Cookie("access", accessToken);
+
+        //when
+        ResultActions result = mockMvc.perform(put("/api/v1/member/password")
+                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                .cookie(accessCookie)
+                .param("currentPassword", "12412fsda")
+                .param("newPassword", "11223344aa"));
+
+        //then
+        result
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.code").value("WRONG_PASSWORD"))
+                .andExpect(jsonPath("$.msg").value("현재 비밀번호가 일치하지 않습니다."));
     }
 }
