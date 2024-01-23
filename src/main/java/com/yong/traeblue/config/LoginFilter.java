@@ -1,5 +1,9 @@
 package com.yong.traeblue.config;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yong.traeblue.config.exception.CustomException;
+import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.domain.RefreshToken;
 import com.yong.traeblue.dto.CustomUserDetails;
@@ -9,6 +13,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.*;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
@@ -16,9 +21,12 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URLEncoder;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final AuthenticationManager authenticationManager;
@@ -34,12 +42,20 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        String username = obtainUsername(request);
-        String password = obtainPassword(request);
+        try {
+            // Request에서 InputStream을 통해 JSON 데이터를 읽어온다.
+            InputStream inputStream = request.getInputStream();
+            Map<String, String> jsonRequest = new ObjectMapper().readValue(inputStream, new TypeReference<Map<String, String>>() {});
 
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
+            String username = jsonRequest.get("username");
+            String password = jsonRequest.get("password");
 
-        return authenticationManager.authenticate(authToken);
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
+
+            return authenticationManager.authenticate(authToken);
+        } catch (IOException e) {
+            throw new AuthenticationServiceException("Failed to parse JSON authentication request", e);
+        }
     }
 
     // 로그인 성공 시 실행
@@ -70,8 +86,6 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         RefreshToken refreshToken = new RefreshToken(refreshValue, username);
         refreshTokenRepository.save(refreshToken);
 
-        System.out.println(refreshTokenRepository.findById(refreshValue));
-
         Cookie refreshCookie = new Cookie("refresh", refreshValue);
         refreshCookie.setHttpOnly(true);
         refreshCookie.setMaxAge((int) jwtUtil.getRefreshExpireTime());
@@ -79,21 +93,34 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         refreshCookie.setPath("/");
         response.addCookie(refreshCookie);
 
-        response.sendRedirect("/");
+        response.setStatus(HttpServletResponse.SC_OK);
     }
 
     // 로그인 실패 시 실행
     @Override
     protected void unsuccessfulAuthentication(HttpServletRequest request, HttpServletResponse response, AuthenticationException failed) throws IOException, ServletException {
-        String errorMessage;
-
         if(failed instanceof BadCredentialsException) {
-            errorMessage = "아이디 또는 비밀번호가 맞지 않습니다.";
-        }  else {
-            errorMessage = "로그인 요청을 처리할 수 없습니다.";
-        }
+            // 400 에러 코드 설정
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
-        errorMessage = URLEncoder.encode(errorMessage, "UTF-8");
-        response.sendRedirect("/member/login?error=true&exception=" + errorMessage);
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("code", ErrorCode.INVALID_LOGIN.getCode());
+            errorResponse.put("msg", ErrorCode.INVALID_LOGIN.getMsg());
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+        }  else {
+            // 400 에러 코드 설정
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+            Map<String, String> errorResponse = new HashMap<>();
+            errorResponse.put("code", ErrorCode.ACCESS_DENIED.getCode());
+            errorResponse.put("msg", ErrorCode.ACCESS_DENIED.getMsg());
+
+            response.setContentType("application/json");
+            response.setCharacterEncoding("UTF-8");
+            response.getWriter().write(new ObjectMapper().writeValueAsString(errorResponse));
+        }
     }
 }

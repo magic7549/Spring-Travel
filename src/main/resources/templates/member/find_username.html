@@ -16,11 +16,6 @@
 <!-- content start -->
 <div layout:fragment="content" class="container-xxl d-flex justify-content-center">
     <div class="account-box text-center">
-        <script th:if="${error}" th:inline="javascript">
-            /*<![CDATA[*/
-            alert([[${exception}]]);
-            /*]]>*/
-        </script>
         <div class="title">아이디 찾기</div>
         <input type="email" id="email" class="form-control" placeholder="이메일" required>
         <input type="tel" id="phone" class="form-control" placeholder="연락처" required>
@@ -41,22 +36,26 @@
                     return;
                 }
 
-                var formData = {
+                //연락처에서 "-"를 모두 제거
+                phone = phone.replace(/-/g, '');
+
+                var data = {
                     email: $('#email').val(),
-                    phone: $('#phone').val()
+                    phone: phone
                 };
 
                 $.ajax({
                     type: 'POST',
                     url: '/api/v1/member/find-username',
-                    contentType: 'application/x-www-form-urlencoded',
-                    data: formData,
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
                     success: function (response) {
                         alert('아이디 : ' + response.username);
+                        window.location.href = '/member/login';
                     },
                     error: function (error) {
-                        if (error.status === 404) {
-                            alert('아이디가 존재하지 않습니다.');
+                        if (error.status === 400) {
+                            alert(error.responseJSON.msg);
                         }
                     }
                 });

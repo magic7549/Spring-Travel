@@ -15,25 +15,18 @@
 
 <!-- content start -->
 <div layout:fragment="content" class="container-xxl d-flex justify-content-center">
-    <script th:if="${error}" th:inline="javascript">
-        /*<![CDATA[*/
-        alert([[${exception}]]);
-        /*]]>*/
-    </script>
     <div class="account-box text-center">
         <div class="title">회원가입</div>
-        <form th:action="@{/api/v1/member/signup}" th:object="${addMember}" method="post" onsubmit="return validateForm()">
-            <div>
-                <input type="text" id="username" th:field="*{username}" class="form-control" placeholder="아이디" required>
-                <button type="button" onclick="checkUsername()">중복확인</button>
-            </div>
-            <input type="password" id="password" th:field="*{password}" class="form-control signup-password" placeholder="비밀번호" required>
-            <div class="password-hint">영문 대·소문자/숫자/특수문자 중 2가지 이상 조합, 8자~32자</div>
-            <input type="password" id="password2" class="form-control" placeholder="비밀번호 확인" required>
-            <input type="email" id="email" th:field="*{email}" class="form-control" placeholder="이메일" required>
-            <input type="tel" id="phone" th:field="*{phone}" class="form-control" placeholder="연락처" required>
-            <button type="submit" id="signupButton">회원가입</button>
-        </form>
+        <div>
+            <input type="text" id="username" class="form-control" placeholder="아이디" required>
+            <button type="button" onclick="checkUsername()">중복확인</button>
+        </div>
+        <input type="password" id="password" class="form-control signup-password" placeholder="비밀번호" required>
+        <div class="password-hint">영문 대·소문자/숫자/특수문자 중 2가지 이상 조합, 8자~32자</div>
+        <input type="password" id="password2" class="form-control" placeholder="비밀번호 확인" required>
+        <input type="email" id="email" class="form-control" placeholder="이메일" required>
+        <input type="tel" id="phone" class="form-control" placeholder="연락처" required>
+        <button type="button" id="signupButton" onclick="signupProcess()">회원가입</button>
         <script th:inline="javascript">
             var isUsername = false;
 
@@ -147,6 +140,37 @@
                 return true;
             }
 
+            function signupProcess() {
+                if (!validateForm())
+                    return;
+
+                var data = {
+                    username: $('#username').val(),
+                    password: $('#password').val(),
+                    email: $('#email').val(),
+                    phone: $('#phone').val()
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/v1/member/signup',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        if (response.isSuccess) {
+                            alert('회원가입이 성공했습니다.');
+                            window.location.href = '/member/login';
+                        } else {
+                            alert('회원가입이 실패했습니다.');
+                        }
+                    },
+                    error: function (error) {
+                        if (error.status === 400) {
+                            alert(error.responseJSON.msg);
+                        }
+                    }
+                });
+            }
         </script>
     </div>
 </div>

@@ -72,7 +72,7 @@ class MemberRepositoryTest {
         assertThat(isExist).isTrue();
     }
 
-    @DisplayName("아이디 존재 여부 확인 - 새로운 이메일")
+    @DisplayName("아이디 존재 여부 확인 - 새로운 아이디")
     @Test
     @Transactional
     public void findByUsernameNewTest() {
@@ -88,6 +88,48 @@ class MemberRepositoryTest {
 
         //when
         Boolean isExist = memberRepository.existsByUsername("test2222");
+
+        //then
+        assertThat(isExist).isFalse();
+    }
+
+    @DisplayName("이메일 존재 여부 확인 - 존재함")
+    @Test
+    @Transactional
+    public void findByEmailExistTest() {
+        //given
+        Member member = Member.builder()
+                .username("test")
+                .password("123123123a")
+                .email("test@test.com")
+                .phone("01012345678")
+                .role("ROLE_USER")
+                .build();
+        memberRepository.save(member);
+
+        //when
+        Boolean isExist = memberRepository.existsByEmail("test@test.com");
+
+        //then
+        assertThat(isExist).isTrue();
+    }
+
+    @DisplayName("이메일 존재 여부 확인 - 새로운 이메일")
+    @Test
+    @Transactional
+    public void findByEmailNewTest() {
+        //given
+        Member member = Member.builder()
+                .username("test")
+                .password("123123123a")
+                .email("test@test.com")
+                .phone("01012345678")
+                .role("ROLE_USER")
+                .build();
+        memberRepository.save(member);
+
+        //when
+        Boolean isExist = memberRepository.existsByEmail("22222@test.com");
 
         //then
         assertThat(isExist).isFalse();

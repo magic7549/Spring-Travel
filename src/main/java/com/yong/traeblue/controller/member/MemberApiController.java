@@ -12,16 +12,13 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
 import java.util.Collections;
 import java.util.Map;
 
-@Controller
+@RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/v1/member")
 public class MemberApiController {
@@ -30,7 +27,6 @@ public class MemberApiController {
     private final JWTUtil jwtUtil;
 
     // 아이디 중복체크
-    @ResponseBody
     @GetMapping("/username/{username}")
     public ResponseEntity<Map<String, Boolean>> checkUsername(@PathVariable(name = "username") String username) {
         boolean isExists = memberService.existsUsername(username);
@@ -40,37 +36,44 @@ public class MemberApiController {
 
     // 회원가입
     @PostMapping("/signup")
-    public String signup(AddMemberRequestDto addMember) throws UnsupportedEncodingException {
-        if (memberService.save(addMember))
-            return "redirect:/member/login";
-        else {
-            String errorMessage = URLEncoder.encode("회원가입에 실패하였습니다.", "UTF-8");
-            return "redirect:/member/signup?error=true&exception=" + errorMessage;
-        }
+    public ResponseEntity<Map<String, Boolean>> signup(@RequestBody AddMemberRequestDto addMember) {
+        if (memberService.save(addMember.getUsername(), addMember.getPassword(), addMember.getEmail(), addMember.getPhone()))
+            return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", true));
+        else
+            return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", false));
     }
 
     // 아이디 찾기
-    @ResponseBody
     @PostMapping("/find-username")
-    public ResponseEntity<Map<String, String>> findUsername(FindUsernameRequestDto request) {
+    public ResponseEntity<Map<String, String>> findUsername(@RequestBody FindUsernameRequestDto request) {
         String username = memberService.findUsername(request.getEmail(), request.getPhone());
-        if (username != null) {
-            return ResponseEntity.ok().body(Collections.singletonMap("username", username));
-        } else {
-            return ResponseEntity.notFound().build();
-        }
+        return ResponseEntity.ok().body(Collections.singletonMap("username", username));
     }
 
     // 비밀번호 찾기 - 임시 비밀번호 발급
-    @ResponseBody
     @PostMapping("/find-password")
-    public ResponseEntity<Map<String, String>> findPassword(FindPasswordRequestDto request) {
+    public ResponseEntity<Map<String, String>> findPassword(@RequestBody FindPasswordRequestDto request) {
         String tempPassword = memberService.tempPassword(request.getUsername(), request.getEmail(), request.getPhone());
-        if (tempPassword != null) {
-            return ResponseEntity.ok().body(Collections.singletonMap("tempPassword", tempPassword));
-        } else {
-            return ResponseEntity.notFound().build();
+        return ResponseEntity.ok().body(Collections.singletonMap("tempPassword", tempPassword));
+    }
+
+    // 비밀번호 변경
+    @PutMapping("/password")
+    public ResponseEntity<Map<String, Boolean>> changePassword(HttpServletRequest request, @RequestBody ChangePasswordRequestDto passwordDto) {
+        // access 쿠키에서 username 추출
+        Cookie[] cookies = request.getCookies();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("access")) {
+                    String accessValue = cookie.getValue();
+                    String username = jwtUtil.getUsername(accessValue);
+
+                    boolean isSuccess = memberService.changePassword(passwordDto.getCurrentPassword(), passwordDto.getNewPassword(), username);
+                    return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
+                }
+            }
         }
+        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", false));
     }
 
     // 로그아웃
@@ -99,25 +102,5 @@ public class MemberApiController {
         }
 
         response.sendRedirect("/");
-    }
-
-    // 비밀번호 변경
-    @ResponseBody
-    @PutMapping("/password")
-    public ResponseEntity<Map<String, Boolean>> changePassword(HttpServletRequest request, ChangePasswordRequestDto passwordDto) {
-        // access 쿠키에서 username 추출
-        Cookie[] cookies = request.getCookies();
-        if (cookies != null) {
-            for (Cookie cookie : cookies) {
-                if (cookie.getName().equals("access")) {
-                    String accessValue = cookie.getValue();
-                    String username = jwtUtil.getUsername(accessValue);
-
-                    boolean isSuccess = memberService.changePassword(passwordDto.getCurrentPassword(), passwordDto.getNewPassword(), username);
-                    return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
-                }
-            }
-        }
-        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", false));
     }
 }

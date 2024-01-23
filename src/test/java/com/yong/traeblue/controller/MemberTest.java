@@ -1,13 +1,18 @@
 package com.yong.traeblue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.dto.member.AddMemberRequestDto;
+import com.yong.traeblue.dto.member.ChangePasswordRequestDto;
+import com.yong.traeblue.dto.member.FindPasswordRequestDto;
+import com.yong.traeblue.dto.member.FindUsernameRequestDto;
 import com.yong.traeblue.repository.MemberRepository;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -117,148 +122,353 @@ public class MemberTest {
                         )));
     }
 
-    @DisplayName("아이디 찾기 성공")
-    @Test
-    public void findUsernameSuccess() throws Exception {
-        //given
-        memberRepository.save(Member.builder()
-                .username("test")
-                .password("123123123a")
-                .email("test@test.com")
-                .phone("01012345678")
-                .build());
+    @DisplayName("회원가입 테스트")
+    @Nested
+    class SignupTests {
+        @DisplayName("회원가입 성공")
+        @Test
+        public void signupSuccess() throws Exception {
+            //given
+            AddMemberRequestDto requestDto = new AddMemberRequestDto();
+            requestDto.setUsername("test");
+            requestDto.setPassword("123123123a");
+            requestDto.setEmail("test@test.com");
+            requestDto.setPhone("01012345678");
 
-        //when
-        ResultActions result = mockMvc.perform(post("/api/v1/member/find-username")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("email", "test@test.com")
-                .param("phone", "01012345678"));
+            String body = objectMapper.writeValueAsString(requestDto);
 
-        //then
-        result
-                .andExpect(status().isOk())
-                .andExpect(content().json("{\"username\":test}"))
-                .andDo(document("member/find/username",
-                        Preprocessors.preprocessRequest(prettyPrint()),
-                        Preprocessors.preprocessResponse(prettyPrint()),
-                        formParameters(
-                                parameterWithName("email").description("이메일"),
-                                parameterWithName("phone").description("연락처")
-                        ),
-                        responseFields(
-                                fieldWithPath("username").description("아이디").type(JsonFieldType.STRING)
-                        )));
+            //when
+            ResultActions result = mockMvc.perform(post("/api/v1/member/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andDo(document("member/signup",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("username").description("아이디"),
+                                    fieldWithPath("password").description("비밀번호"),
+                                    fieldWithPath("email").description("이메일"),
+                                    fieldWithPath("phone").description("연락처")
+                            ),
+                            responseFields(
+                                    fieldWithPath("isSuccess").description("회원가입 성공 여부")
+                            )));
+        }
+
+        @DisplayName("회원가입 실패 - 아이디 중복")
+        @Test
+        public void signupUsernameFail() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password(bCryptPasswordEncoder.encode("password123"))
+                    .email("test2222@test.com")
+                    .phone("01012345678")
+                    .build());
+
+            AddMemberRequestDto requestDto = new AddMemberRequestDto();
+            requestDto.setUsername("test");
+            requestDto.setPassword("123123123a");
+            requestDto.setEmail("test@test.com");
+            requestDto.setPhone("01012345678");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            //when
+            ResultActions result = mockMvc.perform(post("/api/v1/member/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("DUPLICATED_USERNAME"));
+        }
+
+        @DisplayName("회원가입 실패 - 이메일 중복")
+        @Test
+        public void signupEmailFail() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test22222")
+                    .password(bCryptPasswordEncoder.encode("password123"))
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
+
+            AddMemberRequestDto requestDto = new AddMemberRequestDto();
+            requestDto.setUsername("test");
+            requestDto.setPassword("123123123a");
+            requestDto.setEmail("test@test.com");
+            requestDto.setPhone("01012345678");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            //when
+            ResultActions result = mockMvc.perform(post("/api/v1/member/signup")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("DUPLICATED_EMAIL"));
+        }
     }
 
-    @DisplayName("아이디 찾기 실패")
-    @Test
-    public void findUsernameFail() throws Exception {
-        //given
-        memberRepository.save(Member.builder()
-                .username("test")
-                .password("123123123a")
-                .email("test@test.com")
-                .phone("01012345678")
-                .build());
+    @DisplayName("아이디 찾기 테스트")
+    @Nested
+    class FindUsernameTests {
+        @DisplayName("아이디 찾기 성공")
+        @Test
+        public void findUsernameSuccess() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password("123123123a")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
 
-        //when
-        ResultActions result = mockMvc.perform(post("/api/v1/member/find-username")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("email", "test2222@test.com")
-                .param("phone", "01012345678"));
+            FindUsernameRequestDto requestDto = new FindUsernameRequestDto();
+            requestDto.setEmail("test@test.com");
+            requestDto.setPhone("01012345678");
+            String body = objectMapper.writeValueAsString(requestDto);
 
-        //then
-        result
-                .andExpect(status().isNotFound());
+            //when
+            ResultActions result = mockMvc.perform(post("/api/v1/member/find-username")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.username").value("test"))
+                    .andDo(document("member/find/username",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("email").description("이메일"),
+                                    fieldWithPath("phone").description("연락처")
+                            ),
+                            responseFields(
+                                    fieldWithPath("username").description("아이디")
+                            )));
+        }
+
+        @DisplayName("아이디 찾기 실패")
+        @Test
+        public void findUsernameFail() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password("123123123a")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
+
+            FindUsernameRequestDto requestDto = new FindUsernameRequestDto();
+            requestDto.setEmail("test222@test.com");
+            requestDto.setPhone("01012345678");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            //when
+            ResultActions result = mockMvc.perform(post("/api/v1/member/find-username")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("NOT_EXISTED_MEMBER"));
+        }
     }
 
-    @DisplayName("비밀번호 찾기 성공 - 임시 비밀번호 발급 성공")
-    @Test
-    public void findPasswordSuccess() throws Exception {
-        //given
-        memberRepository.save(Member.builder()
-                .username("test")
-                .password("123123123a")
-                .email("test@test.com")
-                .phone("01012345678")
-                .build());
+    @DisplayName("비밀번호 찾기(임시 비밀번호 발급) 테스트")
+    @Nested
+    class FindPasswordTests {
+        @DisplayName("임시 비밀번호 발급 성공")
+        @Test
+        public void findPasswordSuccess() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password("123123123a")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
 
-        //when
-        ResultActions result = mockMvc.perform(post("/api/v1/member/find-password")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("username", "test")
-                .param("email", "test@test.com")
-                .param("phone", "01012345678"));
+            FindPasswordRequestDto requestDto = new FindPasswordRequestDto();
+            requestDto.setUsername("test");
+            requestDto.setEmail("test@test.com");
+            requestDto.setPhone("01012345678");
+            String body = objectMapper.writeValueAsString(requestDto);
 
-        //then
-        result
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.tempPassword").isNotEmpty())
-                .andExpect(jsonPath("$.tempPassword").isString())
-                .andDo(document("member/find/password",
-                        Preprocessors.preprocessRequest(prettyPrint()),
-                        Preprocessors.preprocessResponse(prettyPrint()),
-                        formParameters(
-                                parameterWithName("username").description("아이디"),
-                                parameterWithName("email").description("이메일"),
-                                parameterWithName("phone").description("연락처")
-                        ),
-                        responseFields(
-                                fieldWithPath("tempPassword").description("임시 비밀번호").type(JsonFieldType.STRING)
-                        )));
+            //when
+            ResultActions result = mockMvc.perform(post("/api/v1/member/find-password")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.tempPassword").isNotEmpty())
+                    .andExpect(jsonPath("$.tempPassword").isString())
+                    .andDo(document("member/find/password",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("username").description("아이디"),
+                                    fieldWithPath("email").description("이메일"),
+                                    fieldWithPath("phone").description("연락처")
+                            ),
+                            responseFields(
+                                    fieldWithPath("tempPassword").description("임시 비밀번호")
+                            )));
+        }
+
+        @DisplayName("임시 비밀번호 발급 실패")
+        @Test
+        public void findPasswordFail() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password("123123123a")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
+
+            FindPasswordRequestDto requestDto = new FindPasswordRequestDto();
+            requestDto.setUsername("test22");
+            requestDto.setEmail("test22@test.com");
+            requestDto.setPhone("01098765432");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            //when
+            ResultActions result = mockMvc.perform(post("/api/v1/member/find-password")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("NOT_EXISTED_MEMBER"));
+        }
     }
 
-    @DisplayName("회원가입 성공")
-    @Test
-    public void signupSuccess() throws Exception {
-        //given
-        //when
-        ResultActions result = mockMvc.perform(post("/api/v1/member/signup")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("username", "test")
-                .param("password", "123123123a")
-                .param("email", "test@test.com")
-                .param("phone", "01012345678"));
+    @DisplayName("비밀번호 변경 테스트")
+    @Nested
+    class ChangePasswordTests {
+        @DisplayName("비밀번호 변경 성공")
+        @WithMockUser
+        @Test
+        public void changePasswordSuccess() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password(bCryptPasswordEncoder.encode("123123123a"))
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
 
-        //then
-        result
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/member/login"))
-                .andDo(document("member/signup",
-                        Preprocessors.preprocessRequest(prettyPrint()),
-                        Preprocessors.preprocessResponse(prettyPrint()),
-                        formParameters(
-                                parameterWithName("username").description("아이디"),
-                                parameterWithName("password").description("비밀번호"),
-                                parameterWithName("email").description("이메일"),
-                                parameterWithName("phone").description("연락처")
-                        )));
-    }
+            ChangePasswordRequestDto requestDto = new ChangePasswordRequestDto();
+            requestDto.setCurrentPassword("123123123a");
+            requestDto.setNewPassword("9988776655xx");
+            String body = objectMapper.writeValueAsString(requestDto);
 
-    @DisplayName("회원가입 실패 - 아이디 중복")
-    @Test
-    public void signupFail() throws Exception {
-        //given
-        memberRepository.save(Member.builder()
-                .username("test")
-                .password(bCryptPasswordEncoder.encode("password123"))
-                .email("test@test.com")
-                .phone("01012345678")
-                .build());
+            String accessToken = jwtUtil.createAccess("test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
 
-        //when
-        ResultActions result = mockMvc.perform(post("/api/v1/member/signup")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .param("username", "test")
-                .param("password", "123123123a")
-                .param("email", "test@test.com")
-                .param("phone", "01012345678"));
+            //when
+            ResultActions result = mockMvc.perform(put("/api/v1/member/password")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(accessCookie));
 
-        //then
-        String errorMessage = URLEncoder.encode("회원가입에 실패하였습니다.", "UTF-8");
-        result
-                .andExpect(status().is3xxRedirection())
-                .andExpect(redirectedUrl("/member/signup?error=true&exception=" + errorMessage));
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andDo(document("member/password",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("currentPassword").description("현재 비밀번호"),
+                                    fieldWithPath("newPassword").description("새로운 비밀번호")
+                            ),
+                            responseFields(
+                                    fieldWithPath("isSuccess").description("비밀번호 변경 성공 여부")
+                            )));
+        }
+
+        @DisplayName("비밀번호 변경 실패 - 아이디 존재 X")
+        @WithMockUser
+        @Test
+        public void changePasswordFailUsername() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password(bCryptPasswordEncoder.encode("123123123a"))
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
+
+            ChangePasswordRequestDto requestDto = new ChangePasswordRequestDto();
+            requestDto.setCurrentPassword("123123123a");
+            requestDto.setNewPassword("9988776655xx");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            String accessToken = jwtUtil.createAccess("newuser", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(put("/api/v1/member/password")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("NOT_EXISTED_MEMBER"))
+                    .andExpect(jsonPath("$.msg").value("존재하지 않는 회원입니다."));
+        }
+
+        @DisplayName("비밀번호 변경 실패 - 비밀번호 일치 X")
+        @WithMockUser
+        @Test
+        public void changePasswordFailPassword() throws Exception {
+            //given
+            memberRepository.save(Member.builder()
+                    .username("test")
+                    .password(bCryptPasswordEncoder.encode("123123123a"))
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build());
+
+            ChangePasswordRequestDto requestDto = new ChangePasswordRequestDto();
+            requestDto.setCurrentPassword("asdfawef2131");
+            requestDto.setNewPassword("9988776655xx");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            String accessToken = jwtUtil.createAccess("test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(put("/api/v1/member/password")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("WRONG_PASSWORD"))
+                    .andExpect(jsonPath("$.msg").value("비밀번호가 일치하지 않습니다."));
+        }
     }
 
     @DisplayName("로그인 성공")
@@ -332,70 +542,5 @@ public class MemberTest {
                 .andExpect(redirectedUrl("/"));
     }
 
-    @DisplayName("비밀번호 변경")
-    @WithMockUser
-    @Test
-    public void changePassword() throws Exception {
-        //given
-        memberRepository.save(Member.builder()
-                .username("test")
-                .password(bCryptPasswordEncoder.encode("123123123a"))
-                .email("test@test.com")
-                .phone("01012345678")
-                .build());
 
-        String accessToken = jwtUtil.createAccess("test", "ROLE_USER");
-        Cookie accessCookie = new Cookie("access", accessToken);
-
-        //when
-        ResultActions result = mockMvc.perform(put("/api/v1/member/password")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .cookie(accessCookie)
-                .param("currentPassword", "123123123a")
-                .param("newPassword", "11223344aa"));
-
-        //then
-        result
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.isSuccess").value(true))
-                .andDo(document("member/password",
-                        Preprocessors.preprocessRequest(prettyPrint()),
-                        Preprocessors.preprocessResponse(prettyPrint()),
-                        formParameters(
-                                parameterWithName("currentPassword").description("현재 비밀번호"),
-                                parameterWithName("newPassword").description("새로운 비밀번호")
-                        ),
-                        responseFields(
-                                fieldWithPath("isSuccess").description("비밀번호 변경 성공 여부").type(JsonFieldType.BOOLEAN)
-                        )));
-    }
-
-    @DisplayName("비밀번호 변경 실패")
-    @WithMockUser
-    @Test
-    public void changePasswordFail() throws Exception {
-        //given
-        memberRepository.save(Member.builder()
-                .username("test")
-                .password(bCryptPasswordEncoder.encode("123123123a"))
-                .email("test@test.com")
-                .phone("01012345678")
-                .build());
-
-        String accessToken = jwtUtil.createAccess("test", "ROLE_USER");
-        Cookie accessCookie = new Cookie("access", accessToken);
-
-        //when
-        ResultActions result = mockMvc.perform(put("/api/v1/member/password")
-                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-                .cookie(accessCookie)
-                .param("currentPassword", "12412fsda")
-                .param("newPassword", "11223344aa"));
-
-        //then
-        result
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.code").value("WRONG_PASSWORD"))
-                .andExpect(jsonPath("$.msg").value("현재 비밀번호가 일치하지 않습니다."));
-    }
 }

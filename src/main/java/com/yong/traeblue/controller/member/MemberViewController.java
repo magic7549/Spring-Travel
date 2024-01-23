@@ -12,12 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 public class MemberViewController {
 
     @GetMapping("/login")
-    public String login(@RequestParam(value = "error", required = false) String error,
-                        @RequestParam(value = "com/yong/traeblue/config/exception", required = false) String exception,
-                        Model model) {
-        model.addAttribute("error", error);
-        model.addAttribute("com/yong/traeblue/config/exception", exception);
-
+    public String login() {
         return "member/login";
     }
 
@@ -32,13 +27,7 @@ public class MemberViewController {
     }
 
     @GetMapping("/signup")
-    public String signup(@RequestParam(value = "error", required = false) String error,
-                         @RequestParam(value = "com/yong/traeblue/config/exception", required = false) String exception,
-                         Model model, AddMemberRequestDto addMember) {
-        model.addAttribute("addMember", addMember);
-        model.addAttribute("error", error);
-        model.addAttribute("com/yong/traeblue/config/exception", exception);
-
+    public String signup() {
         return "member/signup";
     }
 

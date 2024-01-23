@@ -12,12 +12,51 @@ operation::member/signup/username[snippets="path-parameters"]
 ==== Response
 operation::member/signup/username[snippets="response-body"]
 operation::member/signup/username[snippets="response-fields"]
+---
 
 
 === 회원 가입
 ==== Request
 operation::member/signup[snippets="http-request"]
-operation::member/signup[snippets="form-parameters"]
+operation::member/signup[snippets="request-fields"]
+
+==== Response
+operation::member/signup[snippets="http-response"]
+operation::member/signup[snippets="response-fields"]
+---
+
+
+=== 아이디 찾기
+==== Request
+operation::member/find/username[snippets="http-request"]
+operation::member/find/username[snippets="request-fields"]
+
+==== Response
+operation::member/find/username[snippets="http-response"]
+operation::member/find/username[snippets="response-fields"]
+---
+
+
+=== 비밀번호 찾기 - 임시 비밀번호 발급
+==== Request
+operation::member/find/password[snippets="http-request"]
+operation::member/find/password[snippets="request-fields"]
+
+==== Response
+operation::member/find/password[snippets="http-response"]
+operation::member/find/password[snippets="response-fields"]
+---
+
+
+=== 비밀번호 변경
+==== Request
+operation::member/password[snippets="http-request"]
+operation::member/password[snippets="request-fields"]
+
+==== Response
+operation::member/password[snippets="http-response"]
+operation::member/password[snippets="response-fields"]
+---
 
 
 === 로그인
@@ -27,33 +66,6 @@ operation::member/login[snippets="form-parameters"]
 
 ==== Response
 operation::member/login[snippets="response-cookies"]
+---
 
 
-=== 아이디 찾기
-==== Request
-operation::member/find/username[snippets="http-request"]
-operation::member/find/username[snippets="form-parameters"]
-
-==== Response
-operation::member/find/username[snippets="response-body"]
-operation::member/find/username[snippets="response-fields"]
-
-
-=== 비밀번호 찾기 - 임시 비밀번호 발급
-==== Request
-operation::member/find/password[snippets="http-request"]
-operation::member/find/password[snippets="form-parameters"]
-
-==== Response
-operation::member/find/password[snippets="response-body"]
-operation::member/find/password[snippets="response-fields"]
-
-
-=== 비밀번호 변경
-==== Request
-operation::member/password[snippets="http-request"]
-operation::member/password[snippets="form-parameters"]
-
-==== Response
-operation::member/password[snippets="response-body"]
-operation::member/password[snippets="response-fields"]

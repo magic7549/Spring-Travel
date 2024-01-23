@@ -8,25 +8,58 @@
 <!-- css end -->
 
 <!-- js start -->
+<th:block layout:fragment="script">
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+</th:block>
 <!-- js end -->
 
 <!-- content start -->
 <div layout:fragment="content" class="container-xxl d-flex justify-content-center">
     <div class="account-box text-center">
-        <script th:if="${error}" th:inline="javascript">
-            /*<![CDATA[*/
-            alert([[${exception}]]);
-            /*]]>*/
-        </script>
         <div class="title">로그인</div>
-        <form th:action="@{/api/v1/member/login}" method="post">
-            <input type="text" name="username" class="form-control" placeholder="아이디">
-            <input type="password" name="password" class="form-control" placeholder="비밀번호">
-            <button type="submit">로그인</button>
-            <div class="login-menu">
-                <a th:href="@{/member/signup}">회원가입</a> / <a th:href="@{/member/find-username}">아이디 찾기</a> / <a th:href="@{/member/find-password}">비밀번호 찾기</a>
-            </div>
-        </form>
+        <input type="text" id="username" class="form-control" placeholder="아이디">
+        <input type="password" id="password" class="form-control" placeholder="비밀번호">
+        <button type="button" onclick="loginProcess()">로그인</button>
+        <div class="login-menu">
+            <a th:href="@{/member/signup}">회원가입</a> / <a th:href="@{/member/find-username}">아이디 찾기</a> / <a th:href="@{/member/find-password}">비밀번호 찾기</a>
+        </div>
+        <script th:inline="javascript">
+            function loginProcess() {
+                //아이디가 입력되지 않은 경우
+                var username = document.getElementById('username').value;
+                if (username.trim() === '') {
+                    alert('아이디를 입력하세요.');
+                    return;
+                }
+
+                //비밀번호가 입력되지 않은 경우
+                var password = document.getElementById('password').value;
+                if (password.trim() === '') {
+                    alert('비밀번호를 입력하세요.');
+                    return;
+                }
+
+                var data = {
+                    username: $('#username').val(),
+                    password: $('#password').val()
+                };
+
+                $.ajax({
+                    type: 'POST',
+                    url: '/api/v1/member/login',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        window.location.href = '/';
+                    },
+                    error: function (error) {
+                        if (error.status === 400) {
+                            alert(error.responseJSON.msg);
+                        }
+                    }
+                });
+            }
+        </script>
     </div>
 </div>
 <!-- content end -->
