@@ -1,10 +1,9 @@
 package com.yong.traeblue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.domain.Member;
-import com.yong.traeblue.dto.member.*;
+import com.yong.traeblue.dto.members.*;
 import com.yong.traeblue.repository.MemberRepository;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
@@ -33,7 +32,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
-import java.net.URLEncoder;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -104,13 +102,13 @@ public class MemberTest {
                 .build());
 
         //when
-        ResultActions result = mockMvc.perform(get("/api/v1/member/username/{username}", "test"));
+        ResultActions result = mockMvc.perform(get("/api/v1/members/username/{username}", "test"));
 
         //then
         result
                 .andExpect(status().isOk())
                 .andExpect(content().json("{\"isAvailable\":false}"))
-                .andDo(document("member/signup/username",
+                .andDo(document("members/signup/username",
                         Preprocessors.preprocessRequest(prettyPrint()),
                         Preprocessors.preprocessResponse(prettyPrint()),
                         pathParameters(
@@ -137,7 +135,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(post("/api/v1/member/signup")
+            ResultActions result = mockMvc.perform(post("/api/v1/members")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -145,7 +143,7 @@ public class MemberTest {
             result
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
-                    .andDo(document("member/signup",
+                    .andDo(document("members/signup",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
                             requestFields(
@@ -178,7 +176,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(post("/api/v1/member/signup")
+            ResultActions result = mockMvc.perform(post("/api/v1/members")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -207,7 +205,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(post("/api/v1/member/signup")
+            ResultActions result = mockMvc.perform(post("/api/v1/members")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -238,7 +236,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(post("/api/v1/member/find-username")
+            ResultActions result = mockMvc.perform(post("/api/v1/members/find-username")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -246,7 +244,7 @@ public class MemberTest {
             result
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.username").value("test"))
-                    .andDo(document("member/find/username",
+                    .andDo(document("members/find/username",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
                             requestFields(
@@ -275,7 +273,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(post("/api/v1/member/find-username")
+            ResultActions result = mockMvc.perform(post("/api/v1/members/find-username")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -307,7 +305,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(post("/api/v1/member/find-password")
+            ResultActions result = mockMvc.perform(post("/api/v1/members/find-password")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -316,7 +314,7 @@ public class MemberTest {
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.tempPassword").isNotEmpty())
                     .andExpect(jsonPath("$.tempPassword").isString())
-                    .andDo(document("member/find/password",
+                    .andDo(document("members/find/password",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
                             requestFields(
@@ -347,7 +345,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(post("/api/v1/member/find-password")
+            ResultActions result = mockMvc.perform(post("/api/v1/members/find-password")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -378,11 +376,11 @@ public class MemberTest {
             requestDto.setNewPassword("9988776655xx");
             String body = objectMapper.writeValueAsString(requestDto);
 
-            String accessToken = jwtUtil.createAccess("test", "ROLE_USER");
+            String accessToken = jwtUtil.createAccess(1L, "test", "ROLE_USER");
             Cookie accessCookie = new Cookie("access", accessToken);
 
             //when
-            ResultActions result = mockMvc.perform(put("/api/v1/member/password")
+            ResultActions result = mockMvc.perform(patch("/api/v1/members/password")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body)
                     .cookie(accessCookie));
@@ -391,7 +389,7 @@ public class MemberTest {
             result
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
-                    .andDo(document("member/password",
+                    .andDo(document("members/password",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
                             requestFields(
@@ -420,11 +418,11 @@ public class MemberTest {
             requestDto.setNewPassword("9988776655xx");
             String body = objectMapper.writeValueAsString(requestDto);
 
-            String accessToken = jwtUtil.createAccess("newuser", "ROLE_USER");
+            String accessToken = jwtUtil.createAccess(1L, "newuser", "ROLE_USER");
             Cookie accessCookie = new Cookie("access", accessToken);
 
             //when
-            ResultActions result = mockMvc.perform(put("/api/v1/member/password")
+            ResultActions result = mockMvc.perform(patch("/api/v1/members/password")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body)
                     .cookie(accessCookie));
@@ -453,11 +451,11 @@ public class MemberTest {
             requestDto.setNewPassword("9988776655xx");
             String body = objectMapper.writeValueAsString(requestDto);
 
-            String accessToken = jwtUtil.createAccess("test", "ROLE_USER");
+            String accessToken = jwtUtil.createAccess(1L, "test", "ROLE_USER");
             Cookie accessCookie = new Cookie("access", accessToken);
 
             //when
-            ResultActions result = mockMvc.perform(put("/api/v1/member/password")
+            ResultActions result = mockMvc.perform(patch("/api/v1/members/password")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body)
                     .cookie(accessCookie));
@@ -490,7 +488,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(put("/api/v1/member/login")
+            ResultActions result = mockMvc.perform(put("/api/v1/members/login")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -499,7 +497,7 @@ public class MemberTest {
                     .andExpect(status().isOk())
                     .andExpect(cookie().exists("access"))
                     .andExpect(cookie().exists("refresh"))
-                    .andDo(document("member/login",
+                    .andDo(document("members/login",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
                             requestFields(
@@ -529,7 +527,7 @@ public class MemberTest {
             String body = objectMapper.writeValueAsString(requestDto);
 
             //when
-            ResultActions result = mockMvc.perform(put("/api/v1/member/login")
+            ResultActions result = mockMvc.perform(put("/api/v1/members/login")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body));
 
@@ -546,7 +544,7 @@ public class MemberTest {
     @Test
     public void logout() throws Exception {
         //when
-        ResultActions result = mockMvc.perform(get("/api/v1/member/logout"));
+        ResultActions result = mockMvc.perform(get("/api/v1/members/logout"));
 
         //then
         result
@@ -574,11 +572,11 @@ public class MemberTest {
             requestDto.setPassword("123123123a");
             String body = objectMapper.writeValueAsString(requestDto);
 
-            String refreshToken = jwtUtil.createRefresh("test", "ROLE_USER");
+            String refreshToken = jwtUtil.createRefresh(1L, "test", "ROLE_USER");
             Cookie refreshCookie = new Cookie("refresh", refreshToken);
 
             //when
-            ResultActions result = mockMvc.perform(delete("/api/v1/member/delete")
+            ResultActions result = mockMvc.perform(delete("/api/v1/members")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body)
                     .cookie(refreshCookie));
@@ -587,7 +585,7 @@ public class MemberTest {
             result
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.isSuccess").value(true))
-                    .andDo(document("member/delete",
+                    .andDo(document("members/delete",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
                             requestFields(
@@ -616,11 +614,11 @@ public class MemberTest {
             requestDto.setPassword("qwer1234");
             String body = objectMapper.writeValueAsString(requestDto);
 
-            String refreshToken = jwtUtil.createRefresh("test", "ROLE_USER");
+            String refreshToken = jwtUtil.createRefresh(1L, "test", "ROLE_USER");
             Cookie refreshCookie = new Cookie("refresh", refreshToken);
 
             //when
-            ResultActions result = mockMvc.perform(delete("/api/v1/member/delete")
+            ResultActions result = mockMvc.perform(delete("/api/v1/members")
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body)
                     .cookie(refreshCookie));

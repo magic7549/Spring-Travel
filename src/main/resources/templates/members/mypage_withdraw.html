@@ -24,7 +24,7 @@
                 </div>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item">
-                        <a th:href="@{/member/mypage/password}" class="inactive-menu"><i class="bi bi-chevron-right"></i> 비밀번호 변경</a>
+                        <a th:href="@{/members/mypage/password}" class="inactive-menu"><i class="bi bi-chevron-right"></i> 비밀번호 변경</a>
                     </li>
                     <li class="list-group-item">
                         <span class="active-menu">회원 탈퇴</span>
@@ -61,7 +61,7 @@
 
                                 $.ajax({
                                     type: 'DELETE',
-                                    url: '/api/v1/member/delete',
+                                    url: '/api/v1/members',
                                     contentType: 'application/json',
                                     data: JSON.stringify(data),
                                     success: function (response) {

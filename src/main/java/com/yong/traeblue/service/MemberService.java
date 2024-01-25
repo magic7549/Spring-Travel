@@ -2,17 +2,13 @@ package com.yong.traeblue.service;
 
 import com.yong.traeblue.config.exception.CustomException;
 import com.yong.traeblue.config.exception.ErrorCode;
-import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.domain.Member;
-import com.yong.traeblue.dto.member.AddMemberRequestDto;
 import com.yong.traeblue.repository.MemberRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -73,8 +69,8 @@ public class MemberService {
     }
 
     // 비밀번호 변경
-    public boolean changePassword(String currentPassword, String newPassword, String username) {
-        Member member = memberRepository.findByUsername(username).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_MEMBER));
+    public boolean changePassword(String currentPassword, String newPassword, Long idx) {
+        Member member = memberRepository.findById(idx).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_MEMBER));
 
         if (bCryptPasswordEncoder.matches(currentPassword, member.getPassword())) {
             member.setPassword(bCryptPasswordEncoder.encode(newPassword));

@@ -5,7 +5,7 @@
     <div class="container-xxl">
         <div class="row align-items-center" style="height: 80px;">
             <div class="col text-start">
-                <a th:href="@{/plan}">마이 플랜</a>
+                <a th:href="@{/plans}">마이 플랜</a>
             </div>
             <div class="col text-center">
                 <a th:href="@{/}">
@@ -15,16 +15,16 @@
             <div class="col text-end">
                 <div class="row">
                     <div class="col" sec:authorize="!isAuthenticated()">
-                        <a th:href="@{/member/login}">로그인</a>
+                        <a th:href="@{/members/login}">로그인</a>
                     </div>
                     <div class="col-auto" sec:authorize="!isAuthenticated()">
-                        <a th:href="@{/member/signup}">회원가입</a>
+                        <a th:href="@{/members/signup}">회원가입</a>
                     </div>
                     <div class="col" sec:authorize="isAuthenticated()">
-                        <a th:href="@{/member/mypage/password}">마이페이지 <i class="bi bi-person-circle"></i></a>
+                        <a th:href="@{/members/mypage/password}">마이페이지 <i class="bi bi-person-circle"></i></a>
                     </div>
                     <div class="col-auto" sec:authorize="isAuthenticated()">
-                        <a th:href="@{/api/v1/member/logout}">로그아웃 <i class="bi bi-box-arrow-right"></i></a>
+                        <a th:href="@{/api/v1/members/logout}">로그아웃 <i class="bi bi-box-arrow-right"></i></a>
                     </div>
                 </div>
             </div>

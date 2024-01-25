@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout" layout:decorate="~{fragments/layout}">
+
+<!-- css start -->
+<th:block layout:fragment="css">
+    <link th:href="@{/css/plan.css}" rel="stylesheet" />
+</th:block>
+<!-- css end -->
+
+<!-- js start -->
+<th:block layout:fragment="script">
+    <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+</th:block>
+<!-- js end -->
+
+<!-- content start -->
+<div layout:fragment="content" class="container-xxl">
+    <div class="plan-list-title">마이<span>플랜</span></div>
+    <div class="plan-list-content">
+        <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xxl-4 g-4">
+            <div class="col" th:each="plan : ${myPlans}" >
+                <div class="myplan-list-card" th:onclick="detailPlan([[${plan.idx}]])">
+                    <div>
+                        <div class="travel-title" th:text="${plan.title}"></div>
+                        <div class="travel-date"><span th:text="${plan.startDate}"></span> ~ <span th:text="${plan.endDate}"></span></div>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="myplan-add-card" onclick="openModal()">
+                    <div>
+                        <div class="travel-title">새로운 여행 떠나기</div>
+                        <div class="travel-plus"><i class="bi bi-plus-circle-fill"></i></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <!-- Modal -->
+    <div class="modal fade" id="createPlanModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5">계획 생성</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" class="form-control" id="title">
+                    <input type="date" class="form-control" id="startDate">
+                    <input type="date" class="form-control" id="endDate">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" onclick="createPlan()">생성하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script th:inline="javascript">
+
+        function openModal() {
+             $("#createPlanModal").modal('show');
+        }
+
+        function detailPlan(planIdx) {
+            window.location.href = '/plans/' + planIdx;
+        }
+
+        function createPlan() {
+            var data = {
+                title: $('#title').val(),
+                startDate: $('#startDate').val(),
+                endDate: $('#endDate').val()
+            };
+
+            // Ajax를 이용하여 서버로 데이터 전송
+            $.ajax({
+                type: "POST",
+                url: "/api/v1/plans",  // 실제 엔드포인트에 맞게 수정
+                contentType: 'application/json',
+                data: JSON.stringify(data),
+                success: function(response) {
+                    window.location.href = '/plans';
+                },
+                error: function(error) {
+                    alert(error.responseJSON.msg);
+                }
+            });
+        }
+    </script>
+</div>
+<!-- content end -->
+
+</html>

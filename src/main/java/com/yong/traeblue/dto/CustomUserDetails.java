@@ -26,6 +26,10 @@ public class CustomUserDetails implements UserDetails {
         return collection;
     }
 
+    public Long getIdx() {
+        return member.getIdx();
+    }
+
     @Override
     public String getPassword() {
         return member.getPassword();

@@ -7,7 +7,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.util.Date;
+import java.time.LocalDate;
 
 @Table(name = "plan")
 @EntityListeners(AuditingEntityListener.class)
@@ -27,13 +27,13 @@ public class Plan {
     private String title;
 
     @Column(name = "start_date")
-    private Date startDate;
+    private LocalDate startDate;
 
     @Column(name = "end_date")
-    private Date endDate;
+    private LocalDate endDate;
 
     @Builder
-    public Plan(Long memberIdx, String title, Date startDate, Date endDate) {
+    public Plan(Long memberIdx, String title, LocalDate startDate, LocalDate endDate) {
         this.memberIdx = memberIdx;
         this.title = title;
         this.startDate = startDate;

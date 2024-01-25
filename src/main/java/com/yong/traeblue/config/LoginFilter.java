@@ -34,7 +34,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final RefreshTokenRepository refreshTokenRepository;
 
     public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
-        super.setFilterProcessesUrl("/api/v1/member/login");
+        super.setFilterProcessesUrl("/api/v1/members/login");
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
         this.refreshTokenRepository = refreshTokenRepository;
@@ -64,6 +64,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         CustomUserDetails customUserDetails = (CustomUserDetails)authentication.getPrincipal();
 
         String username = customUserDetails.getUsername();
+        Long idx = customUserDetails.getIdx();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -72,7 +73,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String role = auth.getAuthority();
 
         // access token 생성
-        String accessValue = jwtUtil.createAccess(username, role);
+        String accessValue = jwtUtil.createAccess(idx, username, role);
         Cookie accessCookie = new Cookie("access", accessValue);
         accessCookie.setHttpOnly(true);
         accessCookie.setMaxAge((int) jwtUtil.getAccessExpireTime());
@@ -81,7 +82,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         response.addCookie(accessCookie);
 
         // refresh token 생성
-        String refreshValue = jwtUtil.createRefresh(username, role);
+        String refreshValue = jwtUtil.createRefresh(idx, username, role);
 
         RefreshToken refreshToken = new RefreshToken(refreshValue, username);
         refreshTokenRepository.save(refreshToken);

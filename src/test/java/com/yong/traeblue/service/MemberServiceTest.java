@@ -3,9 +3,8 @@ package com.yong.traeblue.service;
 import com.yong.traeblue.config.exception.CustomException;
 import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.domain.Member;
-import com.yong.traeblue.dto.member.AddMemberRequestDto;
+import com.yong.traeblue.dto.members.AddMemberRequestDto;
 import com.yong.traeblue.repository.MemberRepository;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -208,11 +207,12 @@ class MemberServiceTest {
         @Test
         public void changePasswordSuccess() {
             //given
+            Long idx = 1L;
             String username = "test";
             String email = "test@test.com";
             String phone = "01012345678";
 
-            when(memberRepository.findByUsername(username)).thenReturn(Optional.ofNullable(Member.builder()
+            when(memberRepository.findById(idx)).thenReturn(Optional.ofNullable(Member.builder()
                     .username("test")
                     .password("$2a$10$eVIuyJVT/JfHCd85Stosh.m/sJna.czphUnf.0VEdTuiK.DjENrnq")
                     .email("test@test.com")
@@ -221,7 +221,7 @@ class MemberServiceTest {
             when(bCryptPasswordEncoder.matches(anyString(), anyString())).thenReturn(true);
 
             //when
-            boolean isChangeSuccess = memberService.changePassword("123123123a", "11223344aa", username);
+            boolean isChangeSuccess = memberService.changePassword("123123123a", "11223344aa", idx);
 
             //then
             assertThat(isChangeSuccess).isTrue();
@@ -231,15 +231,16 @@ class MemberServiceTest {
         @Test
         public void changePasswordFailUsername() {
             //given
+            Long idx = 1L;
             String username = "test";
             String email = "test@test.com";
             String phone = "01012345678";
 
-            when(memberRepository.findByUsername(username)).thenThrow(new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_MEMBER));
+            when(memberRepository.findById(idx)).thenThrow(new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_MEMBER));
 
             //when
             try {
-                boolean isChangeSuccess = memberService.changePassword("123123123a", "11223344aa", username);
+                boolean isChangeSuccess = memberService.changePassword("123123123a", "11223344aa", idx);
             } catch (CustomException e) {
                 //then
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_EXISTED_MEMBER);
@@ -250,11 +251,12 @@ class MemberServiceTest {
         @Test
         public void changePasswordFailPassword() {
             //given
+            Long idx = 1L;
             String username = "test";
             String email = "test@test.com";
             String phone = "01012345678";
 
-            when(memberRepository.findByUsername(username)).thenReturn(Optional.ofNullable(Member.builder()
+            when(memberRepository.findById(idx)).thenReturn(Optional.ofNullable(Member.builder()
                     .username("test")
                     .password("$2a$10$eVIuyJVT/JfHCd85Stosh.m/sJna.czphUnf.0VEdTuiK.DjENrnq")
                     .email("test@test.com")
@@ -265,7 +267,7 @@ class MemberServiceTest {
 
             //when
             try {
-                boolean isChangeSuccess = memberService.changePassword("123123123a", "11223344aa", username);
+                boolean isChangeSuccess = memberService.changePassword("123123123a", "11223344aa", idx);
             } catch (CustomException e) {
                 //then
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.WRONG_PASSWORD);

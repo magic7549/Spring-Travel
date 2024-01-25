@@ -1,0 +1,79 @@
+= Member API 문서
+:doctype: book
+:icons: font
+:source-highlighter: highlightjs
+:toc: left
+:toclevels: 2
+
+== 아이디 중복 확인
+=== Request
+operation::members/signup/username[snippets="http-request"]
+operation::members/signup/username[snippets="path-parameters"]
+
+=== Response
+operation::members/signup/username[snippets="response-body"]
+operation::members/signup/username[snippets="response-fields"]
+
+
+== 회원 가입
+=== Request
+operation::members/signup[snippets="http-request"]
+operation::members/signup[snippets="request-fields"]
+
+=== Response
+operation::members/signup[snippets="http-response"]
+operation::members/signup[snippets="response-fields"]
+
+
+== 로그인
+=== Request
+operation::members/login[snippets="http-request"]
+operation::members/login[snippets="request-fields"]
+
+=== Response
+operation::members/login[snippets="http-response"]
+operation::members/login[snippets="response-cookies"]
+
+
+== 아이디 찾기
+=== Request
+operation::members/find/username[snippets="http-request"]
+operation::members/find/username[snippets="request-fields"]
+
+=== Response
+operation::members/find/username[snippets="http-response"]
+operation::members/find/username[snippets="response-fields"]
+
+
+== 비밀번호 찾기 - 임시 비밀번호 발급
+=== Request
+operation::members/find/password[snippets="http-request"]
+operation::members/find/password[snippets="request-fields"]
+
+=== Response
+operation::members/find/password[snippets="http-response"]
+operation::members/find/password[snippets="response-fields"]
+
+
+== 비밀번호 변경
+=== Request
+operation::members/password[snippets="http-request"]
+operation::members/password[snippets="request-fields"]
+
+=== Response
+operation::members/password[snippets="http-response"]
+operation::members/password[snippets="response-fields"]
+
+
+== 회원 탈퇴
+=== Request
+operation::members/delete[snippets="http-request"]
+operation::members/delete[snippets="request-fields"]
+
+=== Response
+operation::members/delete[snippets="http-response"]
+operation::members/delete[snippets="response-fields"]
+
+
+
+

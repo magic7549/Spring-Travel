@@ -1,14 +1,19 @@
 package com.yong.traeblue.config.jwt;
 
+import com.yong.traeblue.config.exception.CustomException;
+import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.domain.RefreshToken;
 import com.yong.traeblue.dto.CustomUserDetails;
+import com.yong.traeblue.repository.MemberRepository;
 import com.yong.traeblue.repository.RefreshTokenRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -18,14 +23,10 @@ import java.io.IOException;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+@RequiredArgsConstructor
 public class JWTFilter extends OncePerRequestFilter {
     private final JWTUtil jwtUtil;
     private final RefreshTokenRepository refreshTokenRepository;
-
-    public JWTFilter(JWTUtil jwtUtil, RefreshTokenRepository refreshTokenRepository) {
-        this.jwtUtil = jwtUtil;
-        this.refreshTokenRepository = refreshTokenRepository;
-    }
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
@@ -63,7 +64,7 @@ public class JWTFilter extends OncePerRequestFilter {
             // refreshToken이 존재
             if (existsRefresh) {
                 // access 쿠키 재발급
-                accessToken = jwtUtil.createAccess(jwtUtil.getUsername(refreshValue), jwtUtil.getRole(refreshValue));
+                accessToken = jwtUtil.createAccess(jwtUtil.getIdx(refreshValue), jwtUtil.getUsername(refreshValue), jwtUtil.getRole(refreshValue));
                 Cookie cookie = new Cookie("access", accessToken);
                 cookie.setHttpOnly(true);
                 cookie.setMaxAge((int) jwtUtil.getAccessExpireTime());

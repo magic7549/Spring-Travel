@@ -16,20 +16,12 @@
 <!-- content start -->
 <div layout:fragment="content" class="container-xxl d-flex justify-content-center">
     <div class="account-box text-center">
-        <div class="title">비밀번호 찾기</div>
-        <input type="text" id="username" class="form-control" placeholder="아이디" required>
+        <div class="title">아이디 찾기</div>
         <input type="email" id="email" class="form-control" placeholder="이메일" required>
         <input type="tel" id="phone" class="form-control" placeholder="연락처" required>
-        <button type="button" onclick="findUsername()">비밀번호 찾기</button>
+        <button type="button" onclick="findUsername()">아이디 찾기</button>
         <script th:inline="javascript">
             function findUsername() {
-                //아이디 입력되지 않은 경우
-                var username = document.getElementById('username').value;
-                if (username.trim() === '') {
-                    alert('아이디를 입력하세요.');
-                    return;
-                }
-
                 //이메일이 입력되지 않은 경우
                 var email = document.getElementById('email').value;
                 if (email.trim() === '') {
@@ -48,19 +40,18 @@
                 phone = phone.replace(/-/g, '');
 
                 var data = {
-                    username: $('#username').val(),
                     email: $('#email').val(),
                     phone: phone
                 };
 
                 $.ajax({
                     type: 'POST',
-                    url: '/api/v1/member/find-password',
+                    url: '/api/v1/members/find-username',
                     contentType: 'application/json',
                     data: JSON.stringify(data),
                     success: function (response) {
-                        alert('임시 비밀번호 : ' + response.tempPassword);
-                        window.location.href = '/member/login';
+                        alert('아이디 : ' + response.username);
+                        window.location.href = '/members/login';
                     },
                     error: function (error) {
                         alert(error.responseJSON.msg);

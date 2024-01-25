@@ -54,7 +54,7 @@
 
                 $.ajax({
                     type: 'GET',
-                    url: '/api/v1/member/username/' + username,
+                    url: '/api/v1/members/username/' + username,
                     success: function (data) {
                         if (data.isAvailable) {
                             // 중복되지 않은 경우
@@ -153,13 +153,13 @@
 
                 $.ajax({
                     type: 'POST',
-                    url: '/api/v1/member/signup',
+                    url: '/api/v1/members',
                     contentType: 'application/json',
                     data: JSON.stringify(data),
                     success: function (response) {
                         if (response.isSuccess) {
                             alert('회원가입이 성공했습니다.');
-                            window.location.href = '/member/login';
+                            window.location.href = '/members/login';
                         } else {
                             alert('회원가입이 실패했습니다.');
                         }

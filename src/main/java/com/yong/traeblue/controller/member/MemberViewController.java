@@ -5,36 +5,36 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
-@RequestMapping("/member")
+@RequestMapping("/members")
 public class MemberViewController {
 
     @GetMapping("/login")
     public String login() {
-        return "member/login";
+        return "members/login";
     }
 
     @GetMapping("/find-username")
     public String findUsername() {
-        return "member/find_username";
+        return "members/find_username";
     }
 
     @GetMapping("/find-password")
     public String findPassword() {
-        return "member/find_password";
+        return "members/find_password";
     }
 
     @GetMapping("/signup")
     public String signup() {
-        return "member/signup";
+        return "members/signup";
     }
 
     @GetMapping("/mypage/password")
     public String changePassword() {
-        return "member/mypage_password";
+        return "members/mypage_password";
     }
 
     @GetMapping("/mypage/withdraw")
     public String memberWithdraw() {
-        return "member/mypage_withdraw";
+        return "members/mypage_withdraw";
     }
 }

@@ -1,5 +1,7 @@
 /* =================== plan list =================== */
 .plan-list-title {
+    margin-top: 40px;
+    margin-bottom: 40px;
     color: #000;
     text-align: center;
     font-family: Inter;
@@ -18,4 +20,88 @@
     font-weight: 700;
     line-height: normal;
     letter-spacing: 2.88px;
+}
+
+.myplan-list-card {
+    width: 302px;
+    height: 138px;
+    border-radius: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor : pointer;
+}
+
+.plan-list-content .col:nth-child(6n+1) .myplan-list-card {
+    background: #3549ff; /* 파랑 */
+}
+
+.plan-list-content .col:nth-child(6n+2) .myplan-list-card {
+    background: #ff6f82; /* 분홍 */
+}
+
+.plan-list-content .col:nth-child(6n+3) .myplan-list-card {
+    background: #64bb81; /* 연두 */
+}
+
+.plan-list-content .col:nth-child(6n+4) .myplan-list-card {
+    background: #ffbc00; /* 노랑 */
+}
+
+.plan-list-content .col:nth-child(6n+5) .myplan-list-card {
+    background: #a86fff; /* 보라 */
+}
+
+.plan-list-content .col:nth-child(6n+6) .myplan-list-card {
+    background: #36abff; /* 하늘 */
+}
+
+.myplan-list-card .travel-title {
+    margin-bottom: 20px;
+    color: #FFF;
+    text-align: center;
+    font-family: Inter;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+.myplan-list-card .travel-date {
+    color: #FFF;
+    text-align: center;
+    font-family: Inter;
+    font-size: 16px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.myplan-add-card {
+    width: 302px;
+    height: 138px;
+    border-radius: 30px;
+    background: #CDCDCD;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    cursor : pointer;
+}
+
+.myplan-add-card .travel-title {
+    color: #565656;
+    text-align: center;
+    font-family: Inter;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 500;
+    line-height: normal;
+}
+
+.myplan-add-card .travel-plus {
+    text-align: center;
+    color: #FFF;
+    font-size: 30px;
 }

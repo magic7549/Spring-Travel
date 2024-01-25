@@ -6,6 +6,7 @@ import com.yong.traeblue.repository.RefreshTokenRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -39,22 +40,24 @@ public class SecurityConfig {
         http.addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, refreshTokenRepository), UsernamePasswordAuthenticationFilter.class);
 
         http.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
-                .requestMatchers(
+            .requestMatchers(HttpMethod.GET,
                 "/static/**",
-                        "/img/**",
-                        "/css/**",
-                        "/",
-                        "/member/login",
-                        "/member/find-username",
-                        "/member/find-password",
-                        "/member/signup",
-                        "/api/v1/member/login",
-                        "/api/v1/member/username/**",
-                        "/api/v1/member/find-username",
-                        "/api/v1/member/find-password",
-                        "/api/v1/member/signup"
-                ).permitAll()
-                .anyRequest().authenticated());
+                "/img/**",
+                "/css/**",
+                "/",
+                "/members/login",
+                "/members/find-username",
+                "/members/find-password",
+                "/members/signup",
+                "/api/v1/members/username/**"
+            ).permitAll()
+            .requestMatchers(HttpMethod.POST,
+                "/api/v1/members",
+                "/api/v1/members/login",
+                "/api/v1/members/find-username",
+                "/api/v1/members/find-password"
+            ).permitAll()
+            .anyRequest().authenticated());
 
         return http.build();
     }

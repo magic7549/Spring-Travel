@@ -1,4 +1,4 @@
-package com.yong.traeblue.dto.member;
+package com.yong.traeblue.dto.members;
 
 import lombok.Getter;
 import lombok.Setter;

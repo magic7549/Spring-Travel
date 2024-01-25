@@ -3,7 +3,7 @@ package com.yong.traeblue.controller.member;
 import com.yong.traeblue.config.exception.CustomException;
 import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.config.jwt.JWTUtil;
-import com.yong.traeblue.dto.member.*;
+import com.yong.traeblue.dto.members.*;
 import com.yong.traeblue.repository.RefreshTokenRepository;
 import com.yong.traeblue.service.MemberService;
 import jakarta.servlet.http.Cookie;
@@ -20,14 +20,14 @@ import java.util.Map;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/member")
+@RequestMapping("/api/v1")
 public class MemberApiController {
     private final MemberService memberService;
     private final RefreshTokenRepository refreshTokenRepository;
     private final JWTUtil jwtUtil;
 
     // 아이디 중복체크
-    @GetMapping("/username/{username}")
+    @GetMapping("/members/username/{username}")
     public ResponseEntity<Map<String, Boolean>> checkUsername(@PathVariable(name = "username") String username) {
         boolean isExists = memberService.existsUsername(username);
         // 사용 가능하면 true, 아니면 false
@@ -35,7 +35,7 @@ public class MemberApiController {
     }
 
     // 회원가입
-    @PostMapping("/signup")
+    @PostMapping("/members")
     public ResponseEntity<Map<String, Boolean>> signup(@RequestBody AddMemberRequestDto request) {
         if (memberService.save(request.getUsername(), request.getPassword(), request.getEmail(), request.getPhone()))
             return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", true));
@@ -44,33 +44,33 @@ public class MemberApiController {
     }
 
     // 아이디 찾기
-    @PostMapping("/find-username")
+    @PostMapping("/members/find-username")
     public ResponseEntity<Map<String, String>> findUsername(@RequestBody FindUsernameRequestDto request) {
         String username = memberService.findUsername(request.getEmail(), request.getPhone());
         return ResponseEntity.ok().body(Collections.singletonMap("username", username));
     }
 
     // 비밀번호 찾기 - 임시 비밀번호 발급
-    @PostMapping("/find-password")
+    @PostMapping("/members/find-password")
     public ResponseEntity<Map<String, String>> findPassword(@RequestBody FindPasswordRequestDto request) {
         String tempPassword = memberService.tempPassword(request.getUsername(), request.getEmail(), request.getPhone());
         return ResponseEntity.ok().body(Collections.singletonMap("tempPassword", tempPassword));
     }
 
     // 비밀번호 변경
-    @PutMapping("/password")
+    @PatchMapping("/members/password")
     public ResponseEntity<Map<String, Boolean>> changePassword(@CookieValue(name = "access", required = false) String accessToken, @RequestBody ChangePasswordRequestDto passwordDto) {
         if (accessToken == null) {
             throw new CustomException(HttpStatus.UNAUTHORIZED, ErrorCode.ACCESS_DENIED);
         }
 
-        String username = jwtUtil.getUsername(accessToken);
-        boolean isSuccess = memberService.changePassword(passwordDto.getCurrentPassword(), passwordDto.getNewPassword(), username);
+        Long memberIdx = jwtUtil.getIdx(accessToken);
+        boolean isSuccess = memberService.changePassword(passwordDto.getCurrentPassword(), passwordDto.getNewPassword(), memberIdx);
         return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
     }
 
     // 로그아웃
-    @GetMapping("/logout")
+    @GetMapping("/members/logout")
     public void logout(HttpServletRequest request, HttpServletResponse response) throws IOException {
         // access 쿠키 삭제
         Cookie accessCookie = new Cookie("access", null);
@@ -98,7 +98,7 @@ public class MemberApiController {
     }
 
     // 회원 탈퇴
-    @DeleteMapping("/delete")
+    @DeleteMapping("/members")
     public ResponseEntity<Map<String, Boolean>> withdraw(@RequestBody WithdrawMemberRequestDto request, HttpServletResponse response, @CookieValue(name = "refresh") String refresh) {
         if (memberService.withdrawMember(request.getUsername(), request.getPassword())) {
             // access 쿠키 삭제
