@@ -15,7 +15,52 @@
 
 <!-- content start -->
 <div layout:fragment="content" class="container-xxl">
-    <div>플랜 title</div>
+    <div class="plan-detail-top-menu row">
+        <div class="col-6 text-start"><a th:href="@{/plans}" class="back-href"><i class="bi bi-arrow-left"></i> 목록으로</a></div>
+        <div class="col-6 text-end">
+            <button type="button" class="btn btn-primary">저장</button>
+            <button type="button" class="btn btn-danger">삭제</button>
+        </div>
+    </div>
+    <div class="plan-detail-header text-center">
+        <div class="title" th:text="${planDetail.title}"></div>
+        <div class="date"><span th:text="${planDetail.startDate}"></span> ~ <span th:text="${planDetail.endDate}"></span></div>
+    </div>
+    <div class="plan-detail-content row">
+        <!-- 목적지 목록 -->
+        <div class="col-4" style="background-color: yellow;">
+            <div class="accordion" id="accordionExample">
+                <!-- travelDuration만큼 반복할 아이템 -->
+                <div th:each="day, dayIdx : ${#numbers.sequence(1, planDetail.travelDuration)}" class="accordion-item">
+                    <h2 class="accordion-header">
+                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                                th:data-bs-target="'#collapse' + ${dayIdx.index}">
+                            [[${day}]]일차
+                        </button>
+                    </h2>
+                    <div th:id="'collapse' + ${dayIdx.index}" class="accordion-collapse collapse"
+                         data-bs-parent="#accordionExample">
+                        <div class="accordion-body">
+                            <!-- n 일차 동안(같은 visitDate 동안) 방문할 관광지 목록 -->
+                            <div th:each="destination : ${planDetail.destinations}"
+                                 th:if="${destination.visitDate == day}">
+                                <div class="destination-card">
+                                    <div class="title" th:text="${destination.title}"></div>
+                                    <div class="addr">
+                                        <span class="addr1" th:text="${destination.addr1}"></span>
+                                        <span class="addr2" th:text="${destination.addr2}"></span>
+                                    </div>
+                                    <div class="orderNum" th:text="${destination.orderNum}"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- 우측 지도 및 관광지 목록 -->
+        <div class="col-8" style="background-color: green;">s</div>
+    </div>
 </div>
 <!-- content end -->
 

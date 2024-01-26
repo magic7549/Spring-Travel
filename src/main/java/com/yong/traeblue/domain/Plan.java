@@ -1,5 +1,6 @@
 package com.yong.traeblue.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -8,6 +9,7 @@ import lombok.NoArgsConstructor;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @Table(name = "plan")
 @EntityListeners(AuditingEntityListener.class)
@@ -20,8 +22,10 @@ public class Plan {
     @Column(name = "idx", nullable = false, updatable = false)
     private Long idx;
 
-    @Column(name = "member_idx")
-    private Long memberIdx;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JsonIgnoreProperties({"plans", "plan"})
+    @JoinColumn(name = "member_idx", referencedColumnName = "idx", nullable = false)
+    private Member member;
 
     @Column(name = "title", length = 30)
     private String title;
@@ -32,9 +36,13 @@ public class Plan {
     @Column(name = "end_date")
     private LocalDate endDate;
 
+    @JsonIgnoreProperties({"plan"})
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL)
+    private List<Destination> destinations;
+
     @Builder
-    public Plan(Long memberIdx, String title, LocalDate startDate, LocalDate endDate) {
-        this.memberIdx = memberIdx;
+    public Plan(Member member, String title, LocalDate startDate, LocalDate endDate) {
+        this.member = member;
         this.title = title;
         this.startDate = startDate;
         this.endDate = endDate;

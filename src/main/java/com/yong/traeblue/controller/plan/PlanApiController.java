@@ -3,6 +3,7 @@ package com.yong.traeblue.controller.plan;
 import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.dto.plans.CreatePlanRequestDto;
 import com.yong.traeblue.dto.plans.MyPlanListResponseDto;
+import com.yong.traeblue.dto.plans.PlanResponseDto;
 import com.yong.traeblue.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -34,5 +35,11 @@ public class PlanApiController {
     public ResponseEntity<List<MyPlanListResponseDto>> findMyPlanList(@CookieValue(name = "access") String accessToken) {
         Long memberIdx = jwtUtil.getIdx(accessToken);
         return ResponseEntity.ok().body(planService.findAllMyPlan(memberIdx));
+    }
+
+    // 계획 조회
+    @GetMapping("/plans/{idx}")
+    public ResponseEntity<PlanResponseDto> getPlanDetail(@PathVariable(name = "idx") Long idx) {
+        return ResponseEntity.ok().body(planService.findById(idx));
     }
 }

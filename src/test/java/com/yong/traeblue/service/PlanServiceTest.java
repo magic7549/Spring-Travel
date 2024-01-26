@@ -2,9 +2,11 @@ package com.yong.traeblue.service;
 
 import com.yong.traeblue.config.exception.CustomException;
 import com.yong.traeblue.config.exception.ErrorCode;
+import com.yong.traeblue.domain.Destination;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.domain.Plan;
 import com.yong.traeblue.dto.plans.MyPlanListResponseDto;
+import com.yong.traeblue.dto.plans.PlanResponseDto;
 import com.yong.traeblue.repository.MemberRepository;
 import com.yong.traeblue.repository.PlanRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -20,7 +22,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
-
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,7 +29,6 @@ import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(RestDocumentationExtension.class)
@@ -51,15 +51,17 @@ class PlanServiceTest {
         @Test
         public void createPlanSuccess() {
             //given
-            when(memberRepository.findById(any())).thenReturn(Optional.ofNullable(Member.builder()
+            Member member = Member.builder()
                     .username("test")
                     .password("qwer1234")
                     .email("test@test.com")
                     .phone("01012345678")
-                    .build()));
+                    .build();
+
+            when(memberRepository.findById(any())).thenReturn(Optional.ofNullable(member));
 
             Plan plan = Plan.builder()
-                    .memberIdx(1L)
+                    .member(member)
                     .title("FirstTravel")
                     .startDate(LocalDate.parse("2024-01-12"))
                     .endDate(LocalDate.parse("2024-01-17"))
@@ -98,8 +100,18 @@ class PlanServiceTest {
         @Test
         public void findPlansSuccess() {
             //given
+            Member member = Member.builder()
+                    .username("test")
+                    .password("qwer1234")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build();
+            ReflectionTestUtils.setField(member, "idx", 1L);
+
+            when(memberRepository.findById(any())).thenReturn(Optional.of(member));
+
             Plan plan = Plan.builder()
-                    .memberIdx(1L)
+                    .member(member)
                     .title("FirstTravel")
                     .startDate(LocalDate.parse("2024-01-12"))
                     .endDate(LocalDate.parse("2024-01-17"))
@@ -108,8 +120,7 @@ class PlanServiceTest {
 
             List<Plan> myPlans = new ArrayList<>();
             myPlans.add(plan);
-
-            when(planRepository.findByMemberIdx(any())).thenReturn(myPlans);
+            when(planRepository.findByMember(member)).thenReturn(myPlans);
 
             //when
             List<MyPlanListResponseDto> findMyPlans = planService.findAllMyPlan(1L);
@@ -123,9 +134,18 @@ class PlanServiceTest {
         @Test
         public void myPlansIsEmpty() {
             //given
-            List<Plan> myPlans = new ArrayList<>();
+            Member member = Member.builder()
+                    .username("test")
+                    .password("qwer1234")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build();
+            ReflectionTestUtils.setField(member, "idx", 1L);
 
-            when(planRepository.findByMemberIdx(any())).thenReturn(myPlans);
+            when(memberRepository.findById(any())).thenReturn(Optional.of(member));
+
+            List<Plan> myPlans = new ArrayList<>();
+            when(planRepository.findByMember(any())).thenReturn(myPlans);
 
             //when
             List<MyPlanListResponseDto> findMyPlans = planService.findAllMyPlan(1L);
@@ -133,6 +153,117 @@ class PlanServiceTest {
             //then
             assertThat(findMyPlans).isNotNull();
             assertThat(findMyPlans.size()).isEqualTo(0);
+        }
+    }
+
+    @DisplayName("계획 조회 테스트")
+    @Nested
+    class DetailPlanTests {
+        @DisplayName("목록 조회 성공 - 빈 계획 일 때")
+        @Test
+        public void findPlansDestinationIsNullSuccess() {
+            //given
+            Member member = Member.builder()
+                    .username("test")
+                    .password("qwer1234")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build();
+            ReflectionTestUtils.setField(member, "idx", 1L);
+
+            Plan plan = Plan.builder()
+                    .member(member)
+                    .title("FirstTravel")
+                    .startDate(LocalDate.parse("2024-01-12"))
+                    .endDate(LocalDate.parse("2024-01-17"))
+                    .build();
+            ReflectionTestUtils.setField(plan, "idx", 1L);
+
+            when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
+
+            //when
+            PlanResponseDto findMyPlan = planService.findById(1L);
+
+            //then
+            assertThat(findMyPlan).isNotNull();
+            assertThat(findMyPlan.getTitle()).isEqualTo("FirstTravel");
+            assertThat(findMyPlan.getDestinations()).isNull();
+        }
+
+        @DisplayName("목록 조회 성공")
+        @Test
+        public void findPlansSuccess() {
+            //given
+            Member member = Member.builder()
+                    .username("test")
+                    .password("qwer1234")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build();
+            ReflectionTestUtils.setField(member, "idx", 1L);
+
+            List<Destination> destinations = new ArrayList<>();
+            destinations.add(Destination.builder()
+                    .contentIdx(126273)
+                    .title("가계해수욕장")
+                    .addr1("전라남도 진도군 고군면 신비의바닷길 47")
+                    .addr2("(고군면)")
+                    .mapX(126.3547412438)
+                    .mapY(34.4354594945)
+                    .visitDate(1)
+                    .orderNum(1)
+                    .build());
+
+            Plan plan = Plan.builder()
+                    .member(member)
+                    .title("FirstTravel")
+                    .startDate(LocalDate.parse("2024-01-12"))
+                    .endDate(LocalDate.parse("2024-01-17"))
+                    .build();
+            ReflectionTestUtils.setField(plan, "idx", 1L);
+            ReflectionTestUtils.setField(plan, "destinations", destinations);
+
+            when(planRepository.findById(1L)).thenReturn(Optional.of(plan));
+
+            //when
+            PlanResponseDto findMyPlan = planService.findById(1L);
+
+            //then
+            assertThat(findMyPlan).isNotNull();
+            assertThat(findMyPlan.getTitle()).isEqualTo("FirstTravel");
+            assertThat(findMyPlan.getDestinations()).isNotNull();
+            assertThat(findMyPlan.getDestinations().iterator().next().getTitle()).isEqualTo("가계해수욕장");
+        }
+
+        @DisplayName("목록 조회 실패")
+        @Test
+        public void findPlansFail() {
+            //given
+            Member member = Member.builder()
+                    .username("test")
+                    .password("qwer1234")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build();
+            ReflectionTestUtils.setField(member, "idx", 1L);
+
+            Plan plan = Plan.builder()
+                    .member(member)
+                    .title("FirstTravel")
+                    .startDate(LocalDate.parse("2024-01-12"))
+                    .endDate(LocalDate.parse("2024-01-17"))
+                    .build();
+            ReflectionTestUtils.setField(plan, "idx", 1L);
+
+            when(planRepository.findById(1L)).thenThrow(new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
+
+            //when
+            try {
+                PlanResponseDto findMyPlan = planService.findById(1L);
+            } catch (CustomException e) {
+                //then
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_EXISTED_PLAN);
+            }
         }
     }
 }

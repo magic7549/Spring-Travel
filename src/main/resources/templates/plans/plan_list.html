@@ -38,15 +38,18 @@
     </div>
     <!-- Modal -->
     <div class="modal fade" id="createPlanModal" tabindex="-1">
-        <div class="modal-dialog">
+        <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
                     <h1 class="modal-title fs-5">계획 생성</h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <input type="text" class="form-control" id="title">
-                    <input type="date" class="form-control" id="startDate">
+                    <label for="title">여행 제목</label>
+                    <input type="text" class="form-control" id="title" placeholder="여행 제목...">
+                    <label for="startDate">시작 날짜</label>
+                    <input type="date" class="form-control" id="startDate" onchange="endDateLimit()">
+                    <label for="endDate">종료 날짜</label>
                     <input type="date" class="form-control" id="endDate">
                 </div>
                 <div class="modal-footer">
@@ -57,9 +60,24 @@
         </div>
     </div>
     <script th:inline="javascript">
+        $(function() {
+            var now_utc = Date.now();
+            var timeOff = new Date().getTimezoneOffset() * 60000;
+            var today = new Date(now_utc - timeOff).toISOString().split("T")[0];
+            $('#startDate').attr("min", today).val(today);
+
+            var tomorrow = new Date(now_utc - timeOff + 24 * 60 * 60 * 1000).toISOString().split("T")[0];
+            $('#endDate').attr("min", today).val(tomorrow);
+        });
 
         function openModal() {
              $("#createPlanModal").modal('show');
+        }
+
+        function endDateLimit() {
+            var startDate = document.getElementById("startDate").value;
+
+            $('#endDate').attr("min", startDate).val(startDate);
         }
 
         function detailPlan(planIdx) {
@@ -67,13 +85,21 @@
         }
 
         function createPlan() {
+            var title = $('#title').val();
+            var startDate = $('#startDate').val();
+            var endDate = $('#endDate').val();
+
+            if (!title || !startDate || !endDate) {
+                alert('제목, 시작 날짜, 종료 날짜를 모두 입력하세요.');
+                return;
+            }
+
             var data = {
-                title: $('#title').val(),
-                startDate: $('#startDate').val(),
-                endDate: $('#endDate').val()
+                title: title,
+                startDate: startDate,
+                endDate: endDate
             };
 
-            // Ajax를 이용하여 서버로 데이터 전송
             $.ajax({
                 type: "POST",
                 url: "/api/v1/plans",  // 실제 엔드포인트에 맞게 수정

@@ -14,6 +14,9 @@ public enum ErrorCode {
     DUPLICATED_USERNAME("DUPLICATED_USERNAME", "이미 등록되어 있는 아이디입니다."),
     DUPLICATED_EMAIL("DUPLICATED_EMAIL", "이미 등록되어 있는 이메일입니다."),
 
+    NOT_EXISTED_PLAN("NOT_EXISTED_PLAN", "존재하지 않는 계획입니다."),
+    UNKNOWN_ADD_DESTINATION("UNKNOWN_ADD_DESTINATION", "알 수 없는 이유로 목적지 추가에 실패하였습니다."),
+
     // 401 error
     ACCESS_DENIED("ACCESS_DENIED", "유효하지 않은 요청입니다.");
 

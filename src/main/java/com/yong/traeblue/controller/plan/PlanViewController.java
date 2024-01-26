@@ -2,6 +2,7 @@ package com.yong.traeblue.controller.plan;
 
 import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.dto.plans.MyPlanListResponseDto;
+import com.yong.traeblue.dto.plans.PlanResponseDto;
 import com.yong.traeblue.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Controller;
@@ -31,7 +32,12 @@ public class PlanViewController {
     }
 
     @GetMapping("/plans/{idx}")
-    public String planDetail(@PathVariable(value = "idx") Long idx) {
+    public String planDetail(@PathVariable(value = "idx") Long idx, Model model) {
+        PlanResponseDto planDetail = planService.findById(idx);
+
+        model.addAttribute("planDetail", planDetail);
+        model.addAttribute("travelDuration", planDetail.getTravelDuration());
+
         return "plans/plan_view";
     }
 }

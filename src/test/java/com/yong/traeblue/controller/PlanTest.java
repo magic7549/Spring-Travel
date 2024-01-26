@@ -2,6 +2,7 @@ package com.yong.traeblue.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.yong.traeblue.config.jwt.JWTUtil;
+import com.yong.traeblue.domain.Destination;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.domain.Plan;
 import com.yong.traeblue.dto.plans.CreatePlanRequestDto;
@@ -23,10 +24,12 @@ import org.springframework.http.MediaType;
 import org.springframework.restdocs.RestDocumentationContextProvider;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.restdocs.operation.preprocess.Preprocessors;
+import org.springframework.restdocs.payload.JsonFieldType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.TestPropertySource;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -34,6 +37,9 @@ import org.springframework.web.context.WebApplicationContext;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.document;
 import static org.springframework.restdocs.mockmvc.MockMvcRestDocumentation.documentationConfiguration;
@@ -178,16 +184,16 @@ public class PlanTest {
         @Test
         public void findMyPlansSuccess() throws Exception {
             //given
-            Long memberIdx = memberRepository.findByUsername("test").get().getIdx();
+            Optional<Member> member = memberRepository.findByUsername("test");
             planRepository.save(Plan.builder()
-                    .memberIdx(memberIdx)
+                    .member(member.get())
                     .title("First Travel")
                     .startDate(LocalDate.parse("2024-01-12"))
                     .endDate(LocalDate.parse("2024-01-17"))
                     .build());
 
 
-            String accessToken = jwtUtil.createAccess(memberIdx, "test", "ROLE_USER");
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
             Cookie accessCookie = new Cookie("access", accessToken);
 
             //when
@@ -201,7 +207,7 @@ public class PlanTest {
                     .andExpect(jsonPath("$[0].title").isNotEmpty())
                     .andExpect(jsonPath("$[0].startDate").isNotEmpty())
                     .andExpect(jsonPath("$[0].endDate").isNotEmpty())
-                    .andDo(document("plans/find",
+                    .andDo(document("plans/find/list",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
                             responseFields(
@@ -230,6 +236,149 @@ public class PlanTest {
             result
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$").isEmpty());
+        }
+    }
+
+    @DisplayName("계획 상세 조회 테스트")
+    @Nested
+    class GetPlanDetailTests {
+        @DisplayName("계획 상세 조회 성공")
+        @WithMockUser
+        @Test
+        public void getPlanDetailSuccess() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            Plan plan = Plan.builder()
+                    .member(member.get())
+                    .title("First Travel")
+                    .startDate(LocalDate.parse("2024-01-12"))
+                    .endDate(LocalDate.parse("2024-01-17"))
+                    .build();
+
+            List<Destination> destinations = new ArrayList<>();
+            destinations.add(Destination.builder()
+                    .plan(plan)
+                    .contentIdx(126273)
+                    .title("가계해수욕장")
+                    .addr1("전라남도 진도군 고군면 신비의바닷길 47")
+                    .addr2("(고군면)")
+                    .mapX(126.3547412438)
+                    .mapY(34.4354594945)
+                    .visitDate(1)
+                    .orderNum(1)
+                    .build());
+            destinations.add(Destination.builder()
+                    .plan(plan)
+                    .contentIdx(2019720)
+                    .title("가고파 꼬부랑길 벽화마을")
+                    .addr1("경상남도 창원시 마산합포구 성호서7길 15-8")
+                    .addr2("")
+                    .mapX(128.5696552845)
+                    .mapY(35.2077664004)
+                    .visitDate(1)
+                    .orderNum(2)
+                    .build());
+
+            ReflectionTestUtils.setField(plan, "idx", 1L);
+            ReflectionTestUtils.setField(plan, "destinations", destinations);
+
+            Plan getPlan = planRepository.save(plan);
+
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(get("/api/v1/plans/{idx}", getPlan.getIdx())
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.title").value("First Travel"))
+                    .andExpect(jsonPath("$.startDate").value("2024-01-12"))
+                    .andExpect(jsonPath("$.endDate").value("2024-01-17"))
+                    .andExpect(jsonPath("$.destinations[0].title").value("가계해수욕장"))
+                    .andExpect(jsonPath("$.destinations[0].addr1").value("전라남도 진도군 고군면 신비의바닷길 47"))
+                    .andExpect(jsonPath("$.destinations[0].addr2").value("(고군면)"))
+                    .andExpect(jsonPath("$.destinations[0].mapX").value(126.3547412438))
+                    .andExpect(jsonPath("$.destinations[0].mapY").value(34.4354594945))
+                    .andExpect(jsonPath("$.destinations[0].visitDate").value(1))
+                    .andExpect(jsonPath("$.destinations[0].orderNum").value(1))
+                    .andDo(document("plans/find/detail",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            responseFields(
+                                    fieldWithPath("title").description("계획 제목"),
+                                    fieldWithPath("startDate").description("계획 시작일"),
+                                    fieldWithPath("endDate").description("계획 종료일"),
+                                    fieldWithPath("travelDuration").description("여행 기간"),
+                                    fieldWithPath("destinations").description("목적지 목록").type(JsonFieldType.ARRAY),
+                                    fieldWithPath("destinations[].content_idx").description("콘텐츠 ID"),
+                                    fieldWithPath("destinations[].title").description("관광지 이름"),
+                                    fieldWithPath("destinations[].addr1").description("상세 주소1"),
+                                    fieldWithPath("destinations[].addr2").description("상세 주소2"),
+                                    fieldWithPath("destinations[].mapX").description("지도 X 좌표"),
+                                    fieldWithPath("destinations[].mapY").description("지도 Y 좌표"),
+                                    fieldWithPath("destinations[].visitDate").description("방문 날짜"),
+                                    fieldWithPath("destinations[].orderNum").description("방문 순서")
+                            )
+                    ));
+        }
+
+        @DisplayName("계획 상세 조회 실패")
+        @WithMockUser
+        @Test
+        public void getPlanDetailFail() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            Plan plan = Plan.builder()
+                    .member(member.get())
+                    .title("First Travel")
+                    .startDate(LocalDate.parse("2024-01-12"))
+                    .endDate(LocalDate.parse("2024-01-17"))
+                    .build();
+
+            List<Destination> destinations = new ArrayList<>();
+            destinations.add(Destination.builder()
+                    .plan(plan)
+                    .contentIdx(126273)
+                    .title("가계해수욕장")
+                    .addr1("전라남도 진도군 고군면 신비의바닷길 47")
+                    .addr2("(고군면)")
+                    .mapX(126.3547412438)
+                    .mapY(34.4354594945)
+                    .visitDate(1)
+                    .orderNum(1)
+                    .build());
+            destinations.add(Destination.builder()
+                    .plan(plan)
+                    .contentIdx(2019720)
+                    .title("가고파 꼬부랑길 벽화마을")
+                    .addr1("경상남도 창원시 마산합포구 성호서7길 15-8")
+                    .addr2("")
+                    .mapX(128.5696552845)
+                    .mapY(35.2077664004)
+                    .visitDate(1)
+                    .orderNum(2)
+                    .build());
+
+            ReflectionTestUtils.setField(plan, "idx", 1L);
+            ReflectionTestUtils.setField(plan, "destinations", destinations);
+
+            Plan getPlan = planRepository.save(plan);
+
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(get("/api/v1/plans/{idx}", getPlan.getIdx() + 1)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("NOT_EXISTED_PLAN"))
+                    .andExpect(jsonPath("$.msg").value("존재하지 않는 계획입니다."));
         }
     }
 }

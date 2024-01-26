@@ -105,3 +105,48 @@
     color: #FFF;
     font-size: 30px;
 }
+
+#createPlanModal label {
+    margin-bottom: 5px;
+}
+
+#createPlanModal input {
+    margin-bottom: 20px;
+}
+
+/* =================== plan detail =================== */
+.plan-detail-top-menu {
+    margin-top: 40px;
+    margin-bottom: 20px;
+}
+
+.plan-detail-top-menu .back-href {
+    text-decoration-line: none;
+    color: #000;
+    font-size: 16px;
+}
+
+.plan-detail-header {
+    margin-bottom: 30px;
+}
+
+.plan-detail-header .title {
+    margin-bottom: 10px;
+    color: #000;
+    text-align: center;
+    font-family: Inter;
+    font-size: 36px;
+    font-style: normal;
+    font-weight: 700;
+    line-height: normal;
+    letter-spacing: 2.88px;
+}
+
+.plan-detail-header .date {
+    color: #000;
+    font-family: Inter;
+    font-size: 20px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
