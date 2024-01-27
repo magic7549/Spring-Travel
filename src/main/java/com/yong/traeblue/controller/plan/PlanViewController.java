@@ -4,7 +4,10 @@ import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.dto.plans.MyPlanListResponseDto;
 import com.yong.traeblue.dto.plans.PlanResponseDto;
 import com.yong.traeblue.service.PlanService;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.CookieValue;
@@ -19,6 +22,9 @@ import java.util.List;
 public class PlanViewController {
     private final PlanService planService;
     private final JWTUtil jwtUtil;
+
+    @Value("${api.kakao.key}")
+    private String apiKey;
 
     @GetMapping("/plans")
     public String plans(Model model, @CookieValue(name = "access") String accessToken) {
@@ -37,6 +43,8 @@ public class PlanViewController {
 
         model.addAttribute("planDetail", planDetail);
         model.addAttribute("travelDuration", planDetail.getTravelDuration());
+        model.addAttribute("apiKey", apiKey);
+        System.out.println(apiKey);
 
         return "plans/plan_view";
     }

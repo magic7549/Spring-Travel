@@ -150,3 +150,19 @@
     font-weight: 400;
     line-height: normal;
 }
+
+.destination-card {
+    margin-bottom: 20px;
+    padding: 5px 10px;
+    border-radius: 6px;
+    border: 2px solid #C8C8C8;
+    background: #DFDFDF;
+}
+
+.destination-card .orderNum {
+    margin-bottom: 5px;
+    padding: 0;
+    color: #777777;
+    font-size: 24px;
+    font-weight: 800;
+}

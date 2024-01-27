@@ -10,6 +10,8 @@
 <!-- js start -->
 <th:block layout:fragment="script">
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js" integrity="sha256-xLD7nhI62fcsEZK2/v8LsBcb4lG7dgULkuXoXB/j91c=" crossorigin="anonymous"></script>
+    <script type="text/javascript" th:src="@{//dapi.kakao.com/v2/maps/sdk.js?appkey=} + ${apiKey}"></script>
 </th:block>
 <!-- js end -->
 
@@ -28,39 +30,55 @@
     </div>
     <div class="plan-detail-content row">
         <!-- 목적지 목록 -->
-        <div class="col-4" style="background-color: yellow;">
+        <div class="col-4">
             <div class="accordion" id="accordionExample">
                 <!-- travelDuration만큼 반복할 아이템 -->
                 <div th:each="day, dayIdx : ${#numbers.sequence(1, planDetail.travelDuration)}" class="accordion-item">
                     <h2 class="accordion-header">
-                        <button class="accordion-button" type="button" data-bs-toggle="collapse"
+                        <button th:id="'accordion-button-' + ${dayIdx.index}" class="accordion-button collapsed" type="button" data-bs-toggle="collapse"
                                 th:data-bs-target="'#collapse' + ${dayIdx.index}">
-                            [[${day}]]일차
+                            Day [[${day}]]
                         </button>
                     </h2>
                     <div th:id="'collapse' + ${dayIdx.index}" class="accordion-collapse collapse"
                          data-bs-parent="#accordionExample">
                         <div class="accordion-body">
                             <!-- n 일차 동안(같은 visitDate 동안) 방문할 관광지 목록 -->
-                            <div th:each="destination : ${planDetail.destinations}"
+                            <th:block th:each="destination : ${planDetail.destinations}"
                                  th:if="${destination.visitDate == day}">
                                 <div class="destination-card">
+                                    <div class="orderNum" th:text="${destination.orderNum}"></div>
                                     <div class="title" th:text="${destination.title}"></div>
                                     <div class="addr">
                                         <span class="addr1" th:text="${destination.addr1}"></span>
                                         <span class="addr2" th:text="${destination.addr2}"></span>
                                     </div>
-                                    <div class="orderNum" th:text="${destination.orderNum}"></div>
                                 </div>
-                            </div>
+                            </th:block>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
         <!-- 우측 지도 및 관광지 목록 -->
-        <div class="col-8" style="background-color: green;">s</div>
+        <div class="col-8" style="width:856px; height:856px; background-color: yellow; padding: 12px;">s</div>
     </div>
+    <script th:inline="javascript">
+        $(function(){
+            $("#collapse0").addClass("show");
+            $("#accordion-button-0").removeClass("collapsed");
+        });
+
+        $(".accordion-body").sortable({
+            axis: "y",
+            start:function(event,ui){
+                // 드래그 시작 시 호출
+            },
+            stop:function(event,ui){
+                // 드래그 종료 시 호출
+            }
+        });
+    </script>
 </div>
 <!-- content end -->
 
