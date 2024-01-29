@@ -11,7 +11,6 @@
 <th:block layout:fragment="script">
     <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
     <script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js" integrity="sha256-xLD7nhI62fcsEZK2/v8LsBcb4lG7dgULkuXoXB/j91c=" crossorigin="anonymous"></script>
-    <script type="text/javascript" th:src="@{//dapi.kakao.com/v2/maps/sdk.js?appkey=} + ${apiKey}"></script>
 </th:block>
 <!-- js end -->
 
@@ -61,23 +60,120 @@
             </div>
         </div>
         <!-- 우측 지도 및 관광지 목록 -->
-        <div class="col-8" style="width:856px; height:856px; background-color: yellow; padding: 12px;">s</div>
+        <div id="map" class="col-8" style="width:868px; height:868px;">s</div>
     </div>
+    <script type="text/javascript" th:src="@{//dapi.kakao.com/v2/maps/sdk.js?appkey=} + ${apiKey}"></script>
     <script th:inline="javascript">
+        /*<![CDATA[*/
+        var destinations =[[${planDetail.destinations}]];
+        /*]]>*/
+        var currentAccordionId = 1;
+        var markers = [];
+        var polylines = [];
+
+        // visitDate를 기준으로 그룹화한 결과를 저장할 객체 ex) groupedDestinations[1] => 1일날 방문할 관광지 목록
+        var groupedDestinations = {};
+        destinations.forEach(function(destination) {
+            if (!groupedDestinations[destination.visitDate]) {
+                groupedDestinations[destination.visitDate] = [];
+            }
+            groupedDestinations[destination.visitDate].push(destination);
+        });
+
+        var map_container = document.getElementById('map'),
+            options = {
+                 center: new kakao.maps.LatLng(33.450701, 126.570667),
+                 level: 20
+            };
+        var map = new kakao.maps.Map(map_container, options);
+
         $(function(){
             $("#collapse0").addClass("show");
             $("#accordion-button-0").removeClass("collapsed");
+
+            $('.accordion-button').click(function(){
+
+                // 현재 아코디언의 ID에서 "accordion-button-"를 제거하고 정수로 변환하여 변수에 저장
+                currentAccordionId = parseInt($(this).attr('id').replace('accordion-button-', '')) + 1;
+                openMap();
+            });
+
+            openMap();
         });
 
-        $(".accordion-body").sortable({
-            axis: "y",
-            start:function(event,ui){
-                // 드래그 시작 시 호출
-            },
-            stop:function(event,ui){
-                // 드래그 종료 시 호출
-            }
+        $(".accordion-body").each(function() {
+            $(this).sortable({
+                axis: "y",
+                start: function(event, ui) {
+                    // 드래그 시작 시 호출
+                },
+                stop: function(event, ui) {
+                    // 드래그 종료 시 호출
+                    reorder($(this));
+                    openMap();
+                }
+            });
         });
+
+        function reorder(accordionBody) {
+            accordionBody.find('.destination-card').each(function(i, box) {
+                var orderNumElement = $(box).find('.orderNum');
+                var prevNum = parseInt(orderNumElement.text(), 10);
+                orderNumElement.text(i + 1);
+
+                groupedDestinations[currentAccordionId][prevNum - 1].orderNum = i + 1;
+
+                // ajax로
+            });
+            groupedDestinations[currentAccordionId] = groupedDestinations[currentAccordionId].sort(function (a, b) {
+                return a.orderNum - b.orderNum;
+            });
+        }
+
+        function openMap() {
+            // 지도 중심 좌표 설정
+            map.setCenter(new kakao.maps.LatLng(groupedDestinations[currentAccordionId][0].mapY, groupedDestinations[currentAccordionId][0].mapX));
+
+            // 마커 생성
+            markerInit();
+            for (var i = 0; i < groupedDestinations[currentAccordionId].length; i ++) {
+                var marker = new kakao.maps.Marker({
+                    map: map,
+                    position: new kakao.maps.LatLng(groupedDestinations[currentAccordionId][i].mapY, groupedDestinations[currentAccordionId][i].mapX)
+                });
+                markers.push(marker);
+            }
+
+            // 선 생성
+            var linePath = [];
+            for (var i = 0; i < groupedDestinations[currentAccordionId].length; i ++) {
+                linePath.push(new kakao.maps.LatLng(groupedDestinations[currentAccordionId][i].mapY, groupedDestinations[currentAccordionId][i].mapX));
+            }
+            lineInit();
+            var polyline = new kakao.maps.Polyline({
+                map: map,
+                path: linePath,
+                strokeWeight: 5,
+                strokeColor: '#3549ff',
+                strokeOpacity: 0.7,
+                strokeStyle: 'solid'
+            });
+            polylines.push(polyline);
+        }
+
+        function markerInit() {
+            for (var i = 0; i < markers.length; i++) {
+                markers[i].setMap(null);
+            }
+            markers = [];
+        }
+
+        function lineInit() {
+            for (var i = 0; i < polylines.length; i++) {
+                polylines[i].setMap(null);
+            }
+            polylines = [];
+        }
     </script>
 </div>
 <!-- content end -->

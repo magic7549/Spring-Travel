@@ -44,7 +44,6 @@ public class PlanViewController {
         model.addAttribute("planDetail", planDetail);
         model.addAttribute("travelDuration", planDetail.getTravelDuration());
         model.addAttribute("apiKey", apiKey);
-        System.out.println(apiKey);
 
         return "plans/plan_view";
     }
