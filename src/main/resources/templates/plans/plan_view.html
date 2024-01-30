@@ -19,7 +19,7 @@
     <div class="plan-detail-top-menu row">
         <div class="col-6 text-start"><a th:href="@{/plans}" class="back-href"><i class="bi bi-arrow-left"></i> 목록으로</a></div>
         <div class="col-6 text-end">
-            <button type="button" class="btn btn-primary">저장</button>
+            <button type="button" class="btn btn-primary" onclick="saveDestinations()">저장</button>
             <button type="button" class="btn btn-danger">삭제</button>
         </div>
     </div>
@@ -30,7 +30,7 @@
     <div class="plan-detail-content row">
         <!-- 목적지 목록 -->
         <div class="col-4">
-            <div class="accordion" id="accordionExample">
+            <div class="accordion destination-accordion" id="accordionExample">
                 <!-- travelDuration만큼 반복할 아이템 -->
                 <div th:each="day, dayIdx : ${#numbers.sequence(1, planDetail.travelDuration)}" class="accordion-item">
                     <h2 class="accordion-header">
@@ -41,7 +41,7 @@
                     </h2>
                     <div th:id="'collapse' + ${dayIdx.index}" class="accordion-collapse collapse"
                          data-bs-parent="#accordionExample">
-                        <div class="accordion-body">
+                        <div class="accordion-body destination-accordion-body">
                             <!-- n 일차 동안(같은 visitDate 동안) 방문할 관광지 목록 -->
                             <th:block th:each="destination : ${planDetail.destinations}"
                                  th:if="${destination.visitDate == day}">
@@ -60,7 +60,27 @@
             </div>
         </div>
         <!-- 우측 지도 및 관광지 목록 -->
-        <div id="map" class="col-8" style="width:868px; height:868px;">s</div>
+        <div class="col-8">
+            <div class="ratio ratio-1x1 map-container">
+                <div id="map"></div>
+            </div>
+            <div class="place-list">
+                <div class="search-container">
+                    <div class="row g-3 align-items-center">
+                        <div class="col">
+                            <input type="text" class="form-control">
+                        </div>
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-primary">검색</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="place-card" style="width: 100%; height: 156px;">
+                    s
+                </div>
+            </div>
+        </div>
+
     </div>
     <script type="text/javascript" th:src="@{//dapi.kakao.com/v2/maps/sdk.js?appkey=} + ${apiKey}"></script>
     <script th:inline="javascript">
@@ -174,6 +194,36 @@
             }
             polylines = [];
         }
+
+        function saveDestinations() {
+            var mergedDestinations = [];
+
+            // visitDate로 나눠져 있는 목적지를 합치기
+            Object.values(groupedDestinations).forEach(function(destinations) {
+                mergedDestinations = mergedDestinations.concat(destinations);
+            });
+
+            console.log(mergedDestinations);
+
+            /*<![CDATA[*/
+            var planIdx = [[${planIdx}]];
+            /*]]>*/
+            $.ajax({
+                type: "PUT",
+                contentType: "application/json",
+                url: "/api/v1/destinations/" + planIdx,
+                data: JSON.stringify(mergedDestinations),
+                success: function(response) {
+                    // 성공 시 처리
+                    console.log(response);
+                },
+                error: function(error) {
+                    // 실패 시 처리
+                    console.error(error);
+                }
+            });
+        }
+
     </script>
 </div>
 <!-- content end -->

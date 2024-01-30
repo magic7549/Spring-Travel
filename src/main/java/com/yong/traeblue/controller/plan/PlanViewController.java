@@ -41,6 +41,7 @@ public class PlanViewController {
     public String planDetail(@PathVariable(value = "idx") Long idx, Model model) {
         PlanResponseDto planDetail = planService.findById(idx);
 
+        model.addAttribute("planIdx", idx);
         model.addAttribute("planDetail", planDetail);
         model.addAttribute("travelDuration", planDetail.getTravelDuration());
         model.addAttribute("apiKey", apiKey);

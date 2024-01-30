@@ -31,3 +31,13 @@ operation::plans/find/detail[snippets="http-request"]
 === Response
 operation::plans/find/detail[snippets="response-body"]
 operation::plans/find/detail[snippets="response-fields"]
+
+
+== 목적지 목록 업데이트
+=== Request
+operation::destinations/update[snippets="http-request"]
+operation::destinations/update[snippets="request-fields"]
+
+=== Response
+operation::destinations/update[snippets="response-body"]
+operation::destinations/update[snippets="response-fields"]

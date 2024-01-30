@@ -47,4 +47,8 @@ public class Plan {
         this.startDate = startDate;
         this.endDate = endDate;
     }
+
+    public void setDestinations(List<Destination> destinations) {
+        this.destinations = destinations;
+    }
 }

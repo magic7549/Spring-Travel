@@ -19,3 +19,7 @@ spring:
 jwt:
   secret:
     key: EWFG8g4468df4ghfdSDLIH153125IHOG3425dsfueiwgf
+
+api:
+  kakao:
+    key: 12345678910

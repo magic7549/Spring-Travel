@@ -151,12 +151,20 @@
     line-height: normal;
 }
 
+.destination-accordion {
+    --bs-accordion-border-color: #C8C8C8;
+    --bs-accordion-border-width: 2px;
+    --bs-accordion-active-bg: #f3f3f3;
+    --bs-accordion-btn-focus-box-shadow: null;
+}
+
 .destination-card {
-    margin-bottom: 20px;
+    margin-top: 10px;
+    margin-bottom: 10px;
     padding: 5px 10px;
     border-radius: 6px;
     border: 2px solid #C8C8C8;
-    background: #DFDFDF;
+    background: #f3f3f3;
 }
 
 .destination-card .orderNum {
@@ -165,4 +173,39 @@
     color: #777777;
     font-size: 24px;
     font-weight: 800;
+}
+
+.destination-card .title {
+    margin-bottom: 4px;
+    color: #000;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.destination-card .addr {
+    color: #404040;
+    font-size: 16px;
+    font-weight: 400;
+}
+
+.map-container {
+    margin-bottom: 30px;
+    border-radius: 6px;
+    border: 2px solid #C8C8C8;
+}
+
+.place-list {
+    padding: 10px;
+    border-radius: 6px;
+    border: 2px solid #C8C8C8;
+}
+
+.search-container {
+    margin-bottom: 20px;
+}
+
+.place-card {
+    border-radius: 6px;
+    border: 2px solid #C8C8C8;
+    background: #f3f3f3;
 }

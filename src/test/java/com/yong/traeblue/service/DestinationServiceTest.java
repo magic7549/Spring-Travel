@@ -77,7 +77,7 @@ class DestinationServiceTest {
             requestDto.setOrderNum(1);
 
             //when
-            boolean isSuccess = destinationService.save(requestDto);
+            boolean isSuccess = destinationService.addDestination(requestDto);
 
             //then
             assertThat(isSuccess).isTrue();
@@ -117,7 +117,7 @@ class DestinationServiceTest {
 
             //when
             try {
-                boolean isSuccess = destinationService.save(requestDto);
+                boolean isSuccess = destinationService.addDestination(requestDto);
             } catch (CustomException e) {
                 //then
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_EXISTED_PLAN);
