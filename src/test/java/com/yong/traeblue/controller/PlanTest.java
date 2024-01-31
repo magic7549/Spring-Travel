@@ -5,7 +5,9 @@ import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.domain.Destination;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.domain.Plan;
+import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
 import com.yong.traeblue.dto.plans.CreatePlanRequestDto;
+import com.yong.traeblue.dto.plans.SearchPlaceRequestDto;
 import com.yong.traeblue.repository.MemberRepository;
 import com.yong.traeblue.repository.PlanRepository;
 import jakarta.servlet.http.Cookie;
@@ -95,14 +97,51 @@ public class PlanTest {
 
     @BeforeEach
     public void init() {
-        planRepository.deleteAll();
         memberRepository.deleteAll();
-        memberRepository.save(Member.builder()
+        planRepository.deleteAll();
+
+        Member member = memberRepository.save(Member.builder()
                 .username("test")
                 .password(bCryptPasswordEncoder.encode("123123123a"))
                 .email("test@test.com")
                 .phone("01012345678")
                 .build());
+
+        Plan plan = planRepository.save(Plan.builder()
+                .member(member)
+                .title("Test Travel")
+                .startDate(LocalDate.parse("2020-01-01"))
+                .endDate(LocalDate.parse("2020-01-04"))
+                .build());
+
+        Destination destination1 = Destination.builder()
+                .plan(plan)
+                .contentIdx(2789460)
+                .title("가덕도대항인공동굴")
+                .addr1("부산광역시 강서구 대항동 393-9")
+                .addr2("(대항동)")
+                .mapX(128.8274685924)
+                .mapY(35.0133095493)
+                .visitDate(1)
+                .orderNum(1)
+                .build();
+        Destination destination2 = Destination.builder()
+                .plan(plan)
+                .contentIdx(129156)
+                .title("가덕도 등대")
+                .addr1("부산광역시 강서구 외양포로 10")
+                .addr2("")
+                .mapX(128.8295937487)
+                .mapY(35.0006471157)
+                .visitDate(1)
+                .orderNum(2)
+                .build();
+        List<Destination> destinations = new ArrayList<>();
+        destinations.add(destination1);
+        destinations.add(destination2);
+
+        plan.setDestinations(destinations);
+        planRepository.save(plan);
     }
 
     @DisplayName("계획 생성 테스트")
@@ -223,7 +262,13 @@ public class PlanTest {
         @Test
         public void findMyPlansIsEmpty() throws Exception {
             //given
-            Long memberIdx = memberRepository.findByUsername("test").get().getIdx();
+            Long memberIdx = memberRepository.save(Member.builder()
+                    .username("new member")
+                    .password(bCryptPasswordEncoder.encode("123123123a"))
+                    .email("newEmail@email.com")
+                    .phone("01012345678")
+                    .build()
+            ).getIdx();
 
             String accessToken = jwtUtil.createAccess(memberIdx, "test", "ROLE_USER");
             Cookie accessCookie = new Cookie("access", accessToken);
@@ -379,6 +424,119 @@ public class PlanTest {
                     .andExpect(status().isBadRequest())
                     .andExpect(jsonPath("$.code").value("NOT_EXISTED_PLAN"))
                     .andExpect(jsonPath("$.msg").value("존재하지 않는 계획입니다."));
+        }
+    }
+
+    @DisplayName("관광지 목록 조회 테스트")
+    @Nested
+    class GetPlaceListTests {
+        @DisplayName("조회 성공")
+        @WithMockUser
+        @Test
+        public void GetPlaceListSuccess() throws Exception {
+            //given
+            SearchPlaceRequestDto requestDto = new SearchPlaceRequestDto();
+            requestDto.setPageNo("1");
+            requestDto.setKeyword("");
+            requestDto.setAreaCode("");
+            requestDto.setSigunguCode("");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            Optional<Member> member = memberRepository.findByUsername("test");
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(get("/api/v1/places")
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("[].title").isNotEmpty())
+                    .andDo(document("place/get",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("$.pageNo").description("페이지 번호"),
+                                    fieldWithPath("$.keyword").description("검색어"),
+                                    fieldWithPath("$.areaCode").description("지역 코드"),
+                                    fieldWithPath("$.sigunguCode").description("시군구 코드")
+                            ),
+                            responseFields(
+                                    fieldWithPath("[].addr1").description("주소 1")
+                            )));
+        }
+    }
+
+    @DisplayName("목적지 리스트 업데이트 테스트")
+    @Nested
+    class UpdateDestinationsTests {
+        @DisplayName("업데이트 성공")
+        @WithMockUser
+        @Test
+        public void updateDestinationsSuccess() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            Optional<Plan> plan = planRepository.findById(member.get().getIdx());
+
+            SaveDestinationRequestDto requestDto1 = new SaveDestinationRequestDto();
+            requestDto1.setContentIdx(129156);
+            requestDto1.setTitle("가덕도 등대");
+            requestDto1.setAddr1("부산광역시 강서구 대항동 393-9");
+            requestDto1.setAddr2("(대항동)");
+            requestDto1.setMapX(128.8295937487);
+            requestDto1.setMapY(35.0006471157);
+            requestDto1.setVisitDate(1);
+            requestDto1.setOrderNum(1);
+
+            SaveDestinationRequestDto requestDto2 = new SaveDestinationRequestDto();
+            requestDto2.setContentIdx(129156);
+            requestDto2.setTitle("가덕도대항인공동굴");
+            requestDto2.setAddr1("부산광역시 강서구 외양포로 10");
+            requestDto2.setAddr2("");
+            requestDto2.setMapX(128.8274685924);
+            requestDto2.setMapY(35.0133095493);
+            requestDto2.setVisitDate(1);
+            requestDto2.setOrderNum(2);
+
+            List<SaveDestinationRequestDto> destinations = new ArrayList<>();
+            destinations.add(requestDto1);
+            destinations.add(requestDto2);
+
+            String body = objectMapper.writeValueAsString(destinations);
+
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(put("/api/v1/destinations/{idx}", plan.get().getIdx())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andDo(document("destinations/update",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("[].content_idx").description("콘텐츠 인덱스"),
+                                    fieldWithPath("[].title").description("관광지 이름"),
+                                    fieldWithPath("[].addr1").description("주소1"),
+                                    fieldWithPath("[].addr2").description("주소2"),
+                                    fieldWithPath("[].mapX").description("위도"),
+                                    fieldWithPath("[].mapY").description("경도"),
+                                    fieldWithPath("[].visitDate").description("방문 날짜"),
+                                    fieldWithPath("[].orderNum").description("순서")
+                            ),
+                            responseFields(
+                                    fieldWithPath("isSuccess").description("성공 여부")
+                            )));
         }
     }
 }

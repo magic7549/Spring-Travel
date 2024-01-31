@@ -5,8 +5,11 @@ import com.yong.traeblue.config.exception.ErrorCode;
 import com.yong.traeblue.domain.Destination;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.domain.Plan;
+import com.yong.traeblue.dto.destination.AddDestinationRequestDto;
 import com.yong.traeblue.dto.plans.MyPlanListResponseDto;
+import com.yong.traeblue.dto.plans.PlaceResponseDto;
 import com.yong.traeblue.dto.plans.PlanResponseDto;
+import com.yong.traeblue.repository.DestinationRepository;
 import com.yong.traeblue.repository.MemberRepository;
 import com.yong.traeblue.repository.PlanRepository;
 import org.junit.jupiter.api.DisplayName;
@@ -21,7 +24,9 @@ import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabas
 import org.springframework.http.HttpStatus;
 import org.springframework.restdocs.RestDocumentationExtension;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.web.reactive.function.client.WebClient;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -36,10 +41,16 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class PlanServiceTest {
     @Mock
+    DestinationRepository destinationRepository;
+
+    @Mock
     PlanRepository planRepository;
 
     @Mock
     MemberRepository memberRepository;
+
+    @Mock
+    WebClient webClient;
 
     @InjectMocks
     PlanService planService;
@@ -260,6 +271,90 @@ class PlanServiceTest {
             //when
             try {
                 PlanResponseDto findMyPlan = planService.findById(1L);
+            } catch (CustomException e) {
+                //then
+                assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_EXISTED_PLAN);
+            }
+        }
+    }
+
+    @DisplayName("목적지 저장 테스트")
+    @Nested
+    class SaveDestinationTests {
+        @DisplayName("목적지 저장 성공")
+        @Test
+        public void saveDestinationSuccess() {
+            //given
+            Member member = Member.builder()
+                    .username("test")
+                    .password("qwer1234")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build();
+            ReflectionTestUtils.setField(member, "idx", 1L);
+
+            Plan plan = Plan.builder()
+                    .member(member)
+                    .title("FirstTravel")
+                    .startDate(LocalDate.parse("2024-01-12"))
+                    .endDate(LocalDate.parse("2024-01-17"))
+                    .build();
+            ReflectionTestUtils.setField(plan, "idx", 1L);
+
+            when(planRepository.findById(any())).thenReturn(Optional.ofNullable(plan));
+
+            AddDestinationRequestDto requestDto = new AddDestinationRequestDto();
+            requestDto.setPlanIdx(1L);
+            requestDto.setTitle("가계해수욕장");
+            requestDto.setAddr1("전라남도 진도군 고군면 신비의바닷길 47");
+            requestDto.setAddr2("(고군면)");
+            requestDto.setMapX(126.3547412438);
+            requestDto.setMapY(34.4354594945);
+            requestDto.setVisitDate(1);
+            requestDto.setOrderNum(1);
+
+            //when
+            boolean isSuccess = planService.addDestination(requestDto);
+
+            //then
+            assertThat(isSuccess).isTrue();
+        }
+
+        @DisplayName("목적지 저장 실패 - 계획이 존재 X")
+        @Test
+        public void saveDestinationFail() {
+            //given
+            Member member = Member.builder()
+                    .username("test")
+                    .password("qwer1234")
+                    .email("test@test.com")
+                    .phone("01012345678")
+                    .build();
+            ReflectionTestUtils.setField(member, "idx", 1L);
+
+            Plan plan = Plan.builder()
+                    .member(member)
+                    .title("FirstTravel")
+                    .startDate(LocalDate.parse("2024-01-12"))
+                    .endDate(LocalDate.parse("2024-01-17"))
+                    .build();
+            ReflectionTestUtils.setField(plan, "idx", 1L);
+
+            when(planRepository.findById(any())).thenThrow(new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
+
+            AddDestinationRequestDto requestDto = new AddDestinationRequestDto();
+            requestDto.setPlanIdx(1L);
+            requestDto.setTitle("가계해수욕장");
+            requestDto.setAddr1("전라남도 진도군 고군면 신비의바닷길 47");
+            requestDto.setAddr2("(고군면)");
+            requestDto.setMapX(126.3547412438);
+            requestDto.setMapY(34.4354594945);
+            requestDto.setVisitDate(1);
+            requestDto.setOrderNum(1);
+
+            //when
+            try {
+                boolean isSuccess = planService.addDestination(requestDto);
             } catch (CustomException e) {
                 //then
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_EXISTED_PLAN);

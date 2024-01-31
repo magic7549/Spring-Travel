@@ -24,7 +24,7 @@ public class PlanViewController {
     private final JWTUtil jwtUtil;
 
     @Value("${api.kakao.key}")
-    private String apiKey;
+    private String mapApiKey;
 
     @GetMapping("/plans")
     public String plans(Model model, @CookieValue(name = "access") String accessToken) {
@@ -44,7 +44,7 @@ public class PlanViewController {
         model.addAttribute("planIdx", idx);
         model.addAttribute("planDetail", planDetail);
         model.addAttribute("travelDuration", planDetail.getTravelDuration());
-        model.addAttribute("apiKey", apiKey);
+        model.addAttribute("apiKey", mapApiKey);
 
         return "plans/plan_view";
     }

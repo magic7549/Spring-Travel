@@ -1,14 +1,15 @@
 package com.yong.traeblue.controller.plan;
 
 import com.yong.traeblue.config.jwt.JWTUtil;
-import com.yong.traeblue.dto.plans.CreatePlanRequestDto;
-import com.yong.traeblue.dto.plans.MyPlanListResponseDto;
-import com.yong.traeblue.dto.plans.PlanResponseDto;
+import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
+import com.yong.traeblue.dto.plans.*;
 import com.yong.traeblue.service.PlanService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import reactor.core.publisher.Mono;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -41,5 +42,21 @@ public class PlanApiController {
     @GetMapping("/plans/{idx}")
     public ResponseEntity<PlanResponseDto> getPlanDetail(@PathVariable(name = "idx") Long idx) {
         return ResponseEntity.ok().body(planService.findById(idx));
+    }
+
+    // 관광지 목록 조회
+    @GetMapping("/places")
+    public ResponseEntity<List<PlaceResponseDto>> getPlaces(@RequestBody SearchPlaceRequestDto requestDto) throws UnsupportedEncodingException {
+        List<PlaceResponseDto> responseDtoList = planService.getPlaces(requestDto.getPageNo(), requestDto.getKeyword(), requestDto.getAreaCode(), requestDto.getSigunguCode());
+
+        return ResponseEntity.ok().body(responseDtoList);
+    }
+
+    // 목적지 목록 업데이트
+    @PutMapping("/destinations/{idx}")
+    public ResponseEntity<Map<String, Boolean>> updateDestinations(@PathVariable(name = "idx") Long idx, @RequestBody List<SaveDestinationRequestDto> requestDtoList) {
+        boolean isSuccess = planService.updateDestinations(idx, requestDtoList);
+
+        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
     }
 }
