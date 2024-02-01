@@ -13,6 +13,7 @@ import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
 import com.yong.traeblue.dto.plans.MyPlanListResponseDto;
 import com.yong.traeblue.dto.plans.PlaceResponseDto;
 import com.yong.traeblue.dto.plans.PlanResponseDto;
+import com.yong.traeblue.dto.plans.SearchPlaceResponseDto;
 import com.yong.traeblue.repository.DestinationRepository;
 import com.yong.traeblue.repository.MemberRepository;
 import com.yong.traeblue.repository.PlanRepository;
@@ -107,7 +108,7 @@ public class PlanService {
     }
 
     // 관광지 목록 조회
-    public List<PlaceResponseDto> getPlaces(String pageNo, String keyword, String areaCode, String sigunguCode) throws UnsupportedEncodingException {
+    public SearchPlaceResponseDto getPlaces(String numOfRows, String pageNo, String keyword, String areaCode, String sigunguCode) throws UnsupportedEncodingException {
         String baseUrl = "https://apis.data.go.kr/B551011/KorService1/";
         UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl);
 
@@ -117,7 +118,7 @@ public class PlanService {
                     .queryParam("MobileOS", "ETC")
                     .queryParam("MobileApp", "Traeblue")
                     .queryParam("_type", "json")
-                    .queryParam("numOfRows", 10)
+                    .queryParam("numOfRows", numOfRows)
                     .queryParam("pageNo", pageNo)
                     .queryParam("areaCode", areaCode)
                     .queryParam("sigunguCode", sigunguCode);
@@ -127,7 +128,7 @@ public class PlanService {
                     .queryParam("MobileOS", "ETC")
                     .queryParam("MobileApp", "Traeblue")
                     .queryParam("_type", "json")
-                    .queryParam("numOfRows", 10)
+                    .queryParam("numOfRows", numOfRows)
                     .queryParam("pageNo", pageNo)
                     .queryParam("areaCode", areaCode)
                     .queryParam("sigunguCode", sigunguCode)
@@ -148,16 +149,20 @@ public class PlanService {
         try {
             ObjectMapper objectMapper = new ObjectMapper();
             JsonNode jsonNode = objectMapper.readTree(getData);
-
             JsonNode itemsNode = jsonNode.path("response").path("body").path("items").path("item");
 
-            List<PlaceResponseDto> responseDtoList = new ArrayList<>();
+            List<PlaceResponseDto> placeResponseDtoList = new ArrayList<>();
             for (JsonNode itemNode : itemsNode) {
                 PlaceResponseDto responseDto = objectMapper.treeToValue(itemNode, PlaceResponseDto.class);
-                responseDtoList.add(responseDto);
+                placeResponseDtoList.add(responseDto);
             }
 
-            return responseDtoList;
+            JsonNode totalCountNode = jsonNode.path("response").path("body").path("totalCount");
+            SearchPlaceResponseDto responseDto = new SearchPlaceResponseDto();
+            responseDto.setTotalCount(totalCountNode.asInt());
+            responseDto.setResponseDtoList(placeResponseDtoList);
+
+            return responseDto;
         } catch (Exception e) {
             e.printStackTrace();
             throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.UNKNOWN);

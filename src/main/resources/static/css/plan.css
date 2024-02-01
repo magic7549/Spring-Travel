@@ -152,6 +152,8 @@
 }
 
 .destination-accordion {
+    margin-bottom: 30px;
+    min-width: 248px;
     --bs-accordion-border-color: #C8C8C8;
     --bs-accordion-border-width: 2px;
     --bs-accordion-active-bg: #f3f3f3;
@@ -192,12 +194,14 @@
     margin-bottom: 30px;
     border-radius: 6px;
     border: 2px solid #C8C8C8;
+    min-width: 248px;
 }
 
 .place-list {
     padding: 10px;
     border-radius: 6px;
     border: 2px solid #C8C8C8;
+    min-width: 248px;
 }
 
 .search-container {
@@ -205,7 +209,23 @@
 }
 
 .place-card {
+    margin-bottom: 15px;
+    padding: 10px;
     border-radius: 6px;
     border: 2px solid #C8C8C8;
     background: #f3f3f3;
+    min-width: 224px;
+}
+
+.place-card .title {
+    margin-bottom: 4px;
+    color: #000;
+    font-size: 18px;
+    font-weight: 400;
+}
+
+.place-card .addr {
+    color: #404040;
+    font-size: 16px;
+    font-weight: 400;
 }

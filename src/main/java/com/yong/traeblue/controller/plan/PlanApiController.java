@@ -46,10 +46,15 @@ public class PlanApiController {
 
     // 관광지 목록 조회
     @GetMapping("/places")
-    public ResponseEntity<List<PlaceResponseDto>> getPlaces(@RequestBody SearchPlaceRequestDto requestDto) throws UnsupportedEncodingException {
-        List<PlaceResponseDto> responseDtoList = planService.getPlaces(requestDto.getPageNo(), requestDto.getKeyword(), requestDto.getAreaCode(), requestDto.getSigunguCode());
+    public ResponseEntity<SearchPlaceResponseDto> getPlaces(
+            @RequestParam(name = "numOfRows", defaultValue = "10") String numOfRows,
+            @RequestParam(name = "pageNo", defaultValue = "1") String pageNo,
+            @RequestParam(name = "keyword", defaultValue = "") String keyword,
+            @RequestParam(name = "areaCode", defaultValue = "") String areaCode,
+            @RequestParam(name = "sigunguCode", defaultValue = "") String sigunguCode) throws UnsupportedEncodingException {
+        SearchPlaceResponseDto responseDto = planService.getPlaces(numOfRows, pageNo, keyword, areaCode, sigunguCode);
 
-        return ResponseEntity.ok().body(responseDtoList);
+        return ResponseEntity.ok().body(responseDto);
     }
 
     // 목적지 목록 업데이트

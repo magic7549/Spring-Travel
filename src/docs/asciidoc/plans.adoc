@@ -33,6 +33,16 @@ operation::plans/find/detail[snippets="response-body"]
 operation::plans/find/detail[snippets="response-fields"]
 
 
+== 관광지 검색
+=== Request
+operation::place/get[snippets="http-request"]
+operation::place/get[snippets="query-parameters"]
+
+=== Response
+operation::place/get[snippets="response-body"]
+operation::place/get[snippets="response-fields"]
+
+
 == 목적지 목록 업데이트
 === Request
 operation::destinations/update[snippets="http-request"]

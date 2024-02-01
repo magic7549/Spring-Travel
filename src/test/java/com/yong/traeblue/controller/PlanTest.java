@@ -50,6 +50,7 @@ import static org.springframework.restdocs.operation.preprocess.Preprocessors.mo
 import static org.springframework.restdocs.operation.preprocess.Preprocessors.prettyPrint;
 import static org.springframework.restdocs.payload.PayloadDocumentation.*;
 import static org.springframework.restdocs.payload.PayloadDocumentation.fieldWithPath;
+import static org.springframework.restdocs.request.RequestDocumentation.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -435,38 +436,56 @@ public class PlanTest {
         @Test
         public void GetPlaceListSuccess() throws Exception {
             //given
-            SearchPlaceRequestDto requestDto = new SearchPlaceRequestDto();
-            requestDto.setPageNo("1");
-            requestDto.setKeyword("");
-            requestDto.setAreaCode("");
-            requestDto.setSigunguCode("");
-            String body = objectMapper.writeValueAsString(requestDto);
-
             Optional<Member> member = memberRepository.findByUsername("test");
             String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
             Cookie accessCookie = new Cookie("access", accessToken);
 
             //when
             ResultActions result = mockMvc.perform(get("/api/v1/places")
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(body)
+                    .param("numOfRows", "2")
+                    .param("pageNo", "1")
+                    .param("keyword", "")
+                    .param("areaCode", "")
+                    .param("sigunguCode", "")
                     .cookie(accessCookie));
 
             //then
             result
                     .andExpect(status().isOk())
-                    .andExpect(jsonPath("[].title").isNotEmpty())
+                    .andExpect(jsonPath("$.totalCount").isNumber())
                     .andDo(document("place/get",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
-                            requestFields(
-                                    fieldWithPath("$.pageNo").description("페이지 번호"),
-                                    fieldWithPath("$.keyword").description("검색어"),
-                                    fieldWithPath("$.areaCode").description("지역 코드"),
-                                    fieldWithPath("$.sigunguCode").description("시군구 코드")
+                            queryParameters(
+                                    parameterWithName("numOfRows").description("한 페이지 결과 수"),
+                                    parameterWithName("pageNo").description("페이지 번호"),
+                                    parameterWithName("keyword").description("검색어"),
+                                    parameterWithName("areaCode").description("지역 코드"),
+                                    parameterWithName("sigunguCode").description("시군구 코드")
                             ),
                             responseFields(
-                                    fieldWithPath("[].addr1").description("주소 1")
+                                    fieldWithPath("totalCount").description("검색 결과 개수"),
+                                    fieldWithPath("responseDtoList.[].addr1").description("주소 1"),
+                                    fieldWithPath("responseDtoList.[].addr2").description("주소 2"),
+                                    fieldWithPath("responseDtoList.[].areacode").description("지역 코드"),
+                                    fieldWithPath("responseDtoList.[].booktour").description("교과서 속 여행지 여부"),
+                                    fieldWithPath("responseDtoList.[].cat1").description("대분류 코드"),
+                                    fieldWithPath("responseDtoList.[].cat2").description("중분류 코드"),
+                                    fieldWithPath("responseDtoList.[].cat3").description("소분류 코드"),
+                                    fieldWithPath("responseDtoList.[].contentid").description("콘텐츠 ID"),
+                                    fieldWithPath("responseDtoList.[].contenttypeid").description("콘텐츠 타입 ID"),
+                                    fieldWithPath("responseDtoList.[].createdtime").description("등록 일시"),
+                                    fieldWithPath("responseDtoList.[].firstimage").description("대표 이미지 URL"),
+                                    fieldWithPath("responseDtoList.[].firstimage2").description("대표 이미지2 URL"),
+                                    fieldWithPath("responseDtoList.[].cpyrhtDivCd").description("저작권 유형"),
+                                    fieldWithPath("responseDtoList.[].mapx").description("지도 X 좌표"),
+                                    fieldWithPath("responseDtoList.[].mapy").description("지도 Y 좌표"),
+                                    fieldWithPath("responseDtoList.[].mlevel").description("맵 레벨"),
+                                    fieldWithPath("responseDtoList.[].modifiedtime").description("수정 일시"),
+                                    fieldWithPath("responseDtoList.[].sigungucode").description("시군구 코드"),
+                                    fieldWithPath("responseDtoList.[].tel").description("전화번호"),
+                                    fieldWithPath("responseDtoList.[].title").description("제목"),
+                                    fieldWithPath("responseDtoList.[].zipcode").description("우편번호")
                             )));
         }
     }
