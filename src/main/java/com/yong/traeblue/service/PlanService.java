@@ -20,7 +20,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.reactive.function.client.WebClient;
 import org.springframework.web.util.UriComponentsBuilder;
-import reactor.core.publisher.Mono;
 
 import java.io.UnsupportedEncodingException;
 import java.time.LocalDate;
@@ -212,8 +211,11 @@ public class PlanService {
     }
 
     // 목적지 추가
-    public boolean addDestination(AddDestinationRequestDto requestDto) {
-        Plan plan = planRepository.findById(requestDto.getPlanIdx()).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
+    public boolean addDestination(Long planIdx, AddDestinationRequestDto requestDto) {
+        Plan plan = planRepository.findById(planIdx).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
+
+        // visitDate에 목적지 개수
+        int currentOrderNumSize = destinationRepository.findByPlanAndVisitDate(plan, requestDto.getVisitDate()).size();
 
         Destination destination = Destination.builder()
                 .plan(plan)
@@ -224,7 +226,7 @@ public class PlanService {
                 .mapX(requestDto.getMapX())
                 .mapY(requestDto.getMapY())
                 .visitDate(requestDto.getVisitDate())
-                .orderNum(requestDto.getOrderNum())
+                .orderNum(currentOrderNumSize + 1)
                 .build();
 
         try {

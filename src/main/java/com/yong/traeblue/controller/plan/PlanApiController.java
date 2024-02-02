@@ -1,6 +1,7 @@
 package com.yong.traeblue.controller.plan;
 
 import com.yong.traeblue.config.jwt.JWTUtil;
+import com.yong.traeblue.dto.destination.AddDestinationRequestDto;
 import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
 import com.yong.traeblue.dto.plans.*;
 import com.yong.traeblue.service.PlanService;
@@ -40,8 +41,8 @@ public class PlanApiController {
 
     // 계획 조회
     @GetMapping("/plans/{idx}")
-    public ResponseEntity<PlanResponseDto> getPlanDetail(@PathVariable(name = "idx") Long idx) {
-        return ResponseEntity.ok().body(planService.findById(idx));
+    public ResponseEntity<PlanResponseDto> getPlanDetail(@PathVariable(name = "idx") Long planIdx) {
+        return ResponseEntity.ok().body(planService.findById(planIdx));
     }
 
     // 관광지 목록 조회
@@ -65,10 +66,18 @@ public class PlanApiController {
         return ResponseEntity.ok().body(responseDto);
     }
 
+    // 목적지 추가
+    @PostMapping("/destinations/{idx}")
+    public ResponseEntity<Map<String, Boolean>> addDestination(@PathVariable(name = "idx") Long planIdx, @RequestBody AddDestinationRequestDto requestDto) {
+        boolean isSuccess = planService.addDestination(planIdx, requestDto);
+
+        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
+    }
+
     // 목적지 목록 업데이트
     @PutMapping("/destinations/{idx}")
-    public ResponseEntity<Map<String, Boolean>> updateDestinations(@PathVariable(name = "idx") Long idx, @RequestBody List<SaveDestinationRequestDto> requestDtoList) {
-        boolean isSuccess = planService.updateDestinations(idx, requestDtoList);
+    public ResponseEntity<Map<String, Boolean>> updateDestinations(@PathVariable(name = "idx") Long planIdx, @RequestBody List<SaveDestinationRequestDto> requestDtoList) {
+        boolean isSuccess = planService.updateDestinations(planIdx, requestDtoList);
 
         return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
     }

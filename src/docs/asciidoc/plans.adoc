@@ -53,6 +53,16 @@ operation::place/get/detail[snippets="response-body"]
 operation::place/get/detail[snippets="response-fields"]
 
 
+== 목적지 추가
+=== Request
+operation::destinations/add[snippets="http-request"]
+operation::destinations/add[snippets="request-fields"]
+
+=== Response
+operation::destinations/add[snippets="response-body"]
+operation::destinations/add[snippets="response-fields"]
+
+
 == 목적지 목록 업데이트
 === Request
 operation::destinations/update[snippets="http-request"]

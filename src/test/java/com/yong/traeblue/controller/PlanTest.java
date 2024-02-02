@@ -5,6 +5,7 @@ import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.domain.Destination;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.domain.Plan;
+import com.yong.traeblue.dto.destination.AddDestinationRequestDto;
 import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
 import com.yong.traeblue.dto.plans.CreatePlanRequestDto;
 import com.yong.traeblue.dto.plans.SearchPlaceRequestDto;
@@ -546,7 +547,7 @@ public class PlanTest {
         public void updateDestinationsSuccess() throws Exception {
             //given
             Optional<Member> member = memberRepository.findByUsername("test");
-            Optional<Plan> plan = planRepository.findById(member.get().getIdx());
+            List<Plan> plan = planRepository.findByMember(member.get());
 
             SaveDestinationRequestDto requestDto1 = new SaveDestinationRequestDto();
             requestDto1.setContentIdx(129156);
@@ -578,7 +579,7 @@ public class PlanTest {
             Cookie accessCookie = new Cookie("access", accessToken);
 
             //when
-            ResultActions result = mockMvc.perform(put("/api/v1/destinations/{idx}", plan.get().getIdx())
+            ResultActions result = mockMvc.perform(put("/api/v1/destinations/{idx}", plan.get(0).getIdx())
                     .contentType(MediaType.APPLICATION_JSON)
                     .content(body)
                     .cookie(accessCookie));
@@ -599,6 +600,59 @@ public class PlanTest {
                                     fieldWithPath("[].mapY").description("경도"),
                                     fieldWithPath("[].visitDate").description("방문 날짜"),
                                     fieldWithPath("[].orderNum").description("순서")
+                            ),
+                            responseFields(
+                                    fieldWithPath("isSuccess").description("성공 여부")
+                            )));
+        }
+    }
+
+    @DisplayName("목적지 추가 테스트")
+    @Nested
+    class AddDestinationTests {
+        @DisplayName("추가 성공")
+        @WithMockUser
+        @Test
+        public void addDestinationSuccess() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            Plan plan = planRepository.findByMember(member.get()).get(0);
+
+            AddDestinationRequestDto requestDto = new AddDestinationRequestDto();
+            requestDto.setContentIdx(2747097);
+            requestDto.setTitle("광교마루길");
+            requestDto.setAddr1("수원시 장안구 하광교동 400-10");
+            requestDto.setAddr2("");
+            requestDto.setMapX(127.0311736602);
+            requestDto.setMapY(37.3027052472);
+            requestDto.setVisitDate(1);
+
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(post("/api/v1/destinations/{idx}", plan.getIdx())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andDo(document("destinations/add",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("contentIdx").description("콘텐츠 인덱스"),
+                                    fieldWithPath("title").description("관광지 이름"),
+                                    fieldWithPath("addr1").description("주소1"),
+                                    fieldWithPath("addr2").description("주소2"),
+                                    fieldWithPath("mapX").description("위도"),
+                                    fieldWithPath("mapY").description("경도"),
+                                    fieldWithPath("visitDate").description("방문 날짜")
                             ),
                             responseFields(
                                     fieldWithPath("isSuccess").description("성공 여부")

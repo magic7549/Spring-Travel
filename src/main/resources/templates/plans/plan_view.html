@@ -247,6 +247,43 @@
             polylines = [];
         }
 
+        function addDestination(placeString) {
+            var place = JSON.parse(placeString);
+
+            var data = {
+                contentIdx: place.contentid,
+                title: place.title,
+                addr1: place.addr1,
+                addr2: place.addr2,
+                mapX: place.mapx,
+                mapY: place.mapy,
+                visitDate: currentAccordionId
+            };
+
+            /*<![CDATA[*/
+            var planIdx = [[${planIdx}]];
+            /*]]>*/
+            $.ajax({
+                type: "POST",
+                contentType: "application/json",
+                url: "/api/v1/destinations/" + planIdx,
+                data: JSON.stringify(data),
+                success: function(response) {
+                    if (response.isSuccess) {
+                        alert("추가하였습니다..");
+                        location.reload(true);
+                    }
+                    else {
+                        alert("저장에 실패하였습니다.");
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+
+        }
+
         function saveDestinations() {
             var mergedDestinations = [];
 
@@ -266,11 +303,14 @@
                 url: "/api/v1/destinations/" + planIdx,
                 data: JSON.stringify(mergedDestinations),
                 success: function(response) {
-                    // 성공 시 처리
-                    console.log(response);
+                    if (response.isSuccess) {
+                        alert("저장하였습니다.");
+                    }
+                    else {
+                        alert("저장에 실패하였습니다.");
+                    }
                 },
                 error: function(error) {
-                    // 실패 시 처리
                     console.error(error);
                 }
             });
@@ -329,7 +369,7 @@
                                         </div>
                                         <div class="btn-container align-self-end">
                                             <button type="button" class="btn btn-secondary" onclick="detailPlace(${place.contentid})">자세히 보기</button>
-                                            <button type="button" class="btn btn-primary">추가하기</button>
+                                            <button type="button" class="btn btn-primary" onclick="addDestination('${JSON.stringify(place).replace(/"/g, '&quot;')}')">추가하기</button>
                                         </div>
                                     </div>
                                 </div>

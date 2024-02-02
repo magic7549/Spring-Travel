@@ -6,7 +6,6 @@ import lombok.Setter;
 @Getter
 @Setter
 public class AddDestinationRequestDto {
-    private Long planIdx;
     private int contentIdx;
     private String title;
     private String addr1;
@@ -14,5 +13,4 @@ public class AddDestinationRequestDto {
     private double mapX;
     private double mapY;
     private int visitDate;
-    private int orderNum;
 }

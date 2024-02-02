@@ -304,17 +304,15 @@ class PlanServiceTest {
             when(planRepository.findById(any())).thenReturn(Optional.ofNullable(plan));
 
             AddDestinationRequestDto requestDto = new AddDestinationRequestDto();
-            requestDto.setPlanIdx(1L);
             requestDto.setTitle("가계해수욕장");
             requestDto.setAddr1("전라남도 진도군 고군면 신비의바닷길 47");
             requestDto.setAddr2("(고군면)");
             requestDto.setMapX(126.3547412438);
             requestDto.setMapY(34.4354594945);
             requestDto.setVisitDate(1);
-            requestDto.setOrderNum(1);
 
             //when
-            boolean isSuccess = planService.addDestination(requestDto);
+            boolean isSuccess = planService.addDestination(1L, requestDto);
 
             //then
             assertThat(isSuccess).isTrue();
@@ -343,18 +341,16 @@ class PlanServiceTest {
             when(planRepository.findById(any())).thenThrow(new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
 
             AddDestinationRequestDto requestDto = new AddDestinationRequestDto();
-            requestDto.setPlanIdx(1L);
             requestDto.setTitle("가계해수욕장");
             requestDto.setAddr1("전라남도 진도군 고군면 신비의바닷길 47");
             requestDto.setAddr2("(고군면)");
             requestDto.setMapX(126.3547412438);
             requestDto.setMapY(34.4354594945);
             requestDto.setVisitDate(1);
-            requestDto.setOrderNum(1);
 
             //when
             try {
-                boolean isSuccess = planService.addDestination(requestDto);
+                boolean isSuccess = planService.addDestination(1L, requestDto);
             } catch (CustomException e) {
                 //then
                 assertThat(e.getErrorCode()).isEqualTo(ErrorCode.NOT_EXISTED_PLAN);
