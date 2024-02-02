@@ -57,6 +57,14 @@ public class PlanApiController {
         return ResponseEntity.ok().body(responseDto);
     }
 
+    // 관광지 디테일 조회
+    @GetMapping("/places/{contentId}")
+    public ResponseEntity<PlaceDetailsResponseDto> getPlaceDetails(@PathVariable(name = "contentId") Long contentId) throws UnsupportedEncodingException {
+        PlaceDetailsResponseDto responseDto = planService.getPlaceDetails(contentId.toString());
+
+        return ResponseEntity.ok().body(responseDto);
+    }
+
     // 목적지 목록 업데이트
     @PutMapping("/destinations/{idx}")
     public ResponseEntity<Map<String, Boolean>> updateDestinations(@PathVariable(name = "idx") Long idx, @RequestBody List<SaveDestinationRequestDto> requestDtoList) {

@@ -94,19 +94,41 @@
     </div>
     <!-- Modal -->
     <div class="modal fade" id="detailsPlaceModal" tabindex="-1">
-        <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h1 class="modal-title fs-5"><span id="modalTitle"></span></h1>
+                    <h1 class="modal-title fs-5"><span id="detail-title"></span></h1>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
-                    <p><strong>Address 1:</strong> <span id="modalAddr1"></span></p>
-                    <p><strong>Address 2:</strong> <span id="modalAddr2"></span></p>
+                    <div class="container-fluid">
+                        <div class="row mb-4">
+                            <div class="col-auto">
+                                <div style="width:180px;"><img id="detail-img" onerror="this.src='/img/no image.png'"></div>
+                            </div>
+                            <div class="col">
+                                <table class="table table-light table-striped-columns">
+                                    <tbody>
+                                        <tr>
+                                            <td class="th">주소</td>
+                                            <td><span id="detail-addr1"></span> <span id="detail-addr2"></span></td>
+                                        </tr>
+                                        <tr>
+                                            <td class="th">전화번호</td>
+                                            <td><span id="detail-tel"></span></td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <strong style="margin-bottom: 10px; font-weight: 600; font-size: 18px;">개요</strong>
+                            <div class="col"><span id="detail-overview"></span></div>
+                        </div>
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
-                    <button type="button" class="btn btn-primary" onclick="createPlan()">생성하기</button>
                 </div>
             </div>
         </div>
@@ -290,13 +312,12 @@
                     container.empty();
 
                     response.responseDtoList.forEach(function (place) {
-                        var placeJson = JSON.stringify(place);
                         var placeCard = $('<div class="place-card"></div>');
                         placeCard.append(`
                             <div class="row row-cols-1">
                                 <div class="col-auto col-sm-auto">
                                     <div style="width: 200px; height:136px; overflow: hidden;">
-                                        <img src="${place.firstimage}" style="width: 100%; height: 100%; object-fit: cover;" alt="no image" onerror="this.onerror=null; this.src='/img/no image.png'">
+                                        <img src="${place.firstimage}" alt="no image" onerror="this.onerror=null; this.src='/img/no image.png'">
                                     </div>
                                 </div>
                                 <div class="col col-sm">
@@ -307,7 +328,7 @@
                                             <span class="addr2">${place.addr2}</span>
                                         </div>
                                         <div class="btn-container align-self-end">
-                                            <button type="button" class="btn btn-secondary" onclick="openDetailPlaceModal('${JSON.stringify(place).replace(/"/g, '&quot;')}')">자세히 보기</button>
+                                            <button type="button" class="btn btn-secondary" onclick="detailPlace(${place.contentid})">자세히 보기</button>
                                             <button type="button" class="btn btn-primary">추가하기</button>
                                         </div>
                                     </div>
@@ -357,11 +378,31 @@
         function openDetailPlaceModal(placeString) {
             var place = JSON.parse(placeString);
 
-            $('#modalTitle').text(place.title);
-            $('#modalAddr1').text(place.addr1);
-            $('#modalAddr2').text(place.addr2);
 
-            $('#detailsPlaceModal').modal('show');
+        }
+
+        function detailPlace(contentId) {
+            console.log('contentId : ' + contentId);
+
+            $.ajax({
+                type: "GET",
+                contentType: "application/json",
+                url: "/api/v1/places/" + contentId,
+                success: function(response) {
+                    $('#detail-title').text(response.title);
+                    $('#detail-img').attr('src', response.firstimage);
+                    $('#detail-addr1').text(response.addr1);
+                    $('#detail-addr2').text(response.addr2);
+                    $('#detail-tel').text(response.tel);
+                    $('#detail-homepage').text(response.homepage);
+                    $('#detail-overview').text(response.overview);
+
+                    $('#detailsPlaceModal').modal('show');
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
         }
     </script>
     <script th:inline="javascript">

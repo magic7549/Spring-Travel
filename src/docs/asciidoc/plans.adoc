@@ -35,12 +35,22 @@ operation::plans/find/detail[snippets="response-fields"]
 
 == 관광지 검색
 === Request
-operation::place/get[snippets="http-request"]
-operation::place/get[snippets="query-parameters"]
+operation::place/get/list[snippets="http-request"]
+operation::place/get/list[snippets="query-parameters"]
 
 === Response
-operation::place/get[snippets="response-body"]
-operation::place/get[snippets="response-fields"]
+operation::place/get/list[snippets="response-body"]
+operation::place/get/list[snippets="response-fields"]
+
+
+== 관광지 디테일
+=== Request
+operation::place/get/detail[snippets="http-request"]
+operation::place/get/detail[snippets="path-parameters"]
+
+=== Response
+operation::place/get/detail[snippets="response-body"]
+operation::place/get/detail[snippets="response-fields"]
 
 
 == 목적지 목록 업데이트

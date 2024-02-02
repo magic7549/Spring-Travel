@@ -10,10 +10,7 @@ import com.yong.traeblue.domain.Plan;
 import com.yong.traeblue.dto.destination.AddDestinationRequestDto;
 import com.yong.traeblue.dto.destination.DestinationResponseDto;
 import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
-import com.yong.traeblue.dto.plans.MyPlanListResponseDto;
-import com.yong.traeblue.dto.plans.PlaceResponseDto;
-import com.yong.traeblue.dto.plans.PlanResponseDto;
-import com.yong.traeblue.dto.plans.SearchPlaceResponseDto;
+import com.yong.traeblue.dto.plans.*;
 import com.yong.traeblue.repository.DestinationRepository;
 import com.yong.traeblue.repository.MemberRepository;
 import com.yong.traeblue.repository.PlanRepository;
@@ -161,6 +158,51 @@ public class PlanService {
             SearchPlaceResponseDto responseDto = new SearchPlaceResponseDto();
             responseDto.setTotalCount(totalCountNode.asInt());
             responseDto.setResponseDtoList(placeResponseDtoList);
+
+            return responseDto;
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.UNKNOWN);
+        }
+    }
+
+    // 관광지 디테일 조회
+    public PlaceDetailsResponseDto getPlaceDetails(String contentId) throws UnsupportedEncodingException {
+        String baseUrl = "https://apis.data.go.kr/B551011/KorService1/";
+        UriComponentsBuilder builder = UriComponentsBuilder.fromHttpUrl(baseUrl);
+
+
+        builder.path("detailCommon1");
+        builder
+                .queryParam("MobileOS", "ETC")
+                .queryParam("MobileApp", "Traeblue")
+                .queryParam("_type", "json")
+                .queryParam("defaultYN", "Y")
+                .queryParam("firstImageYN", "Y")
+                .queryParam("addrinfoYN", "Y")
+                .queryParam("overviewYN", "Y")
+                .queryParam("contentId", contentId);
+
+        String finalUrl = builder.toUriString();
+        finalUrl += "&serviceKey=" + tourApiKey;
+
+        String getData = webClient.mutate()
+                .build()
+                .get()
+                .uri(finalUrl)
+                .retrieve()
+                .bodyToMono(String.class)
+                .block();
+
+        try {
+            ObjectMapper objectMapper = new ObjectMapper();
+            JsonNode jsonNode = objectMapper.readTree(getData);
+            JsonNode itemsNode = jsonNode.path("response").path("body").path("items").path("item");
+
+            PlaceDetailsResponseDto responseDto = new PlaceDetailsResponseDto();
+            for (JsonNode itemNode : itemsNode) {
+                responseDto = objectMapper.treeToValue(itemNode, PlaceDetailsResponseDto.class);
+            }
 
             return responseDto;
         } catch (Exception e) {

@@ -453,7 +453,7 @@ public class PlanTest {
             result
                     .andExpect(status().isOk())
                     .andExpect(jsonPath("$.totalCount").isNumber())
-                    .andDo(document("place/get",
+                    .andDo(document("place/get/list",
                             Preprocessors.preprocessRequest(prettyPrint()),
                             Preprocessors.preprocessResponse(prettyPrint()),
                             queryParameters(
@@ -486,6 +486,53 @@ public class PlanTest {
                                     fieldWithPath("responseDtoList.[].tel").description("전화번호"),
                                     fieldWithPath("responseDtoList.[].title").description("제목"),
                                     fieldWithPath("responseDtoList.[].zipcode").description("우편번호")
+                            )));
+        }
+    }
+
+    @DisplayName("관광지 디테일 조회 테스트")
+    @Nested
+    class GetPlaceDetailsTests {
+        @DisplayName("조회 성공")
+        @WithMockUser
+        @Test
+        public void GetPlaceDetailsSuccess() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(get("/api/v1/places/{contentId}", 126273)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.title").value("가계해수욕장"))
+                    .andDo(document("place/get/detail",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            pathParameters(
+                                    parameterWithName("contentId").description("콘텐츠 id")
+                            ),
+                            responseFields(
+                                    fieldWithPath("title").description("관광지 이름"),
+                                    fieldWithPath("firstimage").description("이미지 1"),
+                                    fieldWithPath("firstimage2").description("이미지 2"),
+                                    fieldWithPath("addr1").description("주소 1"),
+                                    fieldWithPath("addr2").description("주소 2"),
+                                    fieldWithPath("overview").description("개요"),
+                                    fieldWithPath("contentid").description("콘텐츠 id"),
+                                    fieldWithPath("contenttypeid").description("콘텐츠 타입 id"),
+                                    fieldWithPath("createdtime").description("생성 시간"),
+                                    fieldWithPath("modifiedtime").description("수정 시간"),
+                                    fieldWithPath("tel").description("전화번호"),
+                                    fieldWithPath("telname").description("전화번호명"),
+                                    fieldWithPath("homepage").description("홈페이지"),
+                                    fieldWithPath("booktour").description("교과서 속 여행지 여부"),
+                                    fieldWithPath("cpyrhtDivCd").description("저작권 유형"),
+                                    fieldWithPath("zipcode").description("우편 번호")
                             )));
         }
     }
