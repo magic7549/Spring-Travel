@@ -8,6 +8,7 @@ import com.yong.traeblue.domain.Destination;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.domain.Plan;
 import com.yong.traeblue.dto.destination.AddDestinationRequestDto;
+import com.yong.traeblue.dto.destination.DeleteDestinationRequestDto;
 import com.yong.traeblue.dto.destination.DestinationResponseDto;
 import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
 import com.yong.traeblue.dto.plans.*;
@@ -256,6 +257,23 @@ public class PlanService {
             destination.setOrderNum(requestDto.getOrderNum());
         }
         planRepository.save(plan);
+
+        return true;
+    }
+
+    // 목적지 삭제
+    public boolean deleteDestination(Long planIdx, DeleteDestinationRequestDto requestDto) {
+        Plan plan = planRepository.findById(planIdx).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
+        destinationRepository.deleteByPlanAndVisitDateAndOrderNum(plan, requestDto.getVisitDate(), requestDto.getOrderNum());
+
+        List<Destination> destinationList = destinationRepository.findByPlanAndVisitDate(plan, requestDto.getVisitDate());
+        for (Destination destination : destinationList) {
+            if (destination.getOrderNum() > requestDto.getOrderNum()) {
+                destination.setOrderNum(destination.getOrderNum() - 1);
+            }
+        }
+
+        destinationRepository.saveAll(destinationList);
 
         return true;
     }

@@ -19,7 +19,6 @@
     <div class="plan-detail-top-menu row">
         <div class="col-6 text-start"><a th:href="@{/plans}" class="back-href"><i class="bi bi-arrow-left"></i> 목록으로</a></div>
         <div class="col-6 text-end">
-            <button type="button" class="btn btn-primary" onclick="saveDestinations()">저장</button>
             <button type="button" class="btn btn-danger">삭제</button>
         </div>
     </div>
@@ -30,7 +29,7 @@
     <div class="plan-detail-content row row-cols-1 row-cols-md-2">
         <!-- 목적지 목록 -->
         <div class="col col-md-4">
-            <div class="accordion destination-accordion" id="accordionExample">
+            <div class="accordion destination-accordion" id="destinationAccordion">
                 <!-- travelDuration만큼 반복할 아이템 -->
                 <div th:each="day, dayIdx : ${#numbers.sequence(1, planDetail.travelDuration)}" class="accordion-item">
                     <h2 class="accordion-header">
@@ -40,13 +39,21 @@
                         </button>
                     </h2>
                     <div th:id="'collapse' + ${dayIdx.index}" class="accordion-collapse collapse"
-                         data-bs-parent="#accordionExample">
+                         data-bs-parent="#destinationAccordion">
                         <div class="accordion-body destination-accordion-body">
                             <!-- n 일차 동안(같은 visitDate 동안) 방문할 관광지 목록 -->
                             <th:block th:each="destination : ${planDetail.destinations}"
                                  th:if="${destination.visitDate == day}">
                                 <div class="destination-card">
-                                    <div class="orderNum" th:text="${destination.orderNum}"></div>
+                                    <div class="visually-hidden visitDate" th:text="${destination.visitDate}"></div>
+                                    <div class="row">
+                                        <div class="col text-start">
+                                            <div class="orderNum"><i class="bi bi-list"></i> <span th:text="${destination.orderNum}"></span></div>
+                                        </div>
+                                        <div class="col text-end">
+                                            <button type="button" class="btn btn-outline-secondary deleteDestinationBtn" th:onclick="deleteDestination([[${destination.visitDate}]], [[${destination.orderNum}]])"><i class="bi bi-trash"></i></button>
+                                        </div>
+                                    </div>
                                     <div class="title" th:text="${destination.title}"></div>
                                     <div class="addr">
                                         <span class="addr1" th:text="${destination.addr1}"></span>
@@ -156,7 +163,7 @@
         var map_container = document.getElementById('map'),
             options = {
                  center: new kakao.maps.LatLng(33.450701, 126.570667),
-                 level: 20
+                 level: 3
             };
         var map = new kakao.maps.Map(map_container, options);
 
@@ -184,6 +191,7 @@
                 stop: function(event, ui) {
                     // 드래그 종료 시 호출
                     reorder($(this));
+                    saveDestinations();
                     openMap();
                 }
             });
@@ -191,11 +199,19 @@
 
         function reorder(accordionBody) {
             accordionBody.find('.destination-card').each(function(i, box) {
-                var orderNumElement = $(box).find('.orderNum');
+                // orderNum 텍스트 변경
+                var orderNumElement = $(box).find('.orderNum').find('span');
                 var prevNum = parseInt(orderNumElement.text(), 10);
                 orderNumElement.text(i + 1);
 
+                // 리스트 변수 값 변경
                 groupedDestinations[currentAccordionId][prevNum - 1].orderNum = i + 1;
+
+                // 삭제 버튼 onclick 파라미터 변경
+                var visitDateText = $(box).find('.visitDate').text();
+                var deleteDestinationBtnElement = $(box).find('.deleteDestinationBtn');
+
+                deleteDestinationBtnElement.attr('onclick', 'deleteDestination(' + visitDateText + ', ' + (i + 1) + ')');
             });
             groupedDestinations[currentAccordionId] = groupedDestinations[currentAccordionId].sort(function (a, b) {
                 return a.orderNum - b.orderNum;
@@ -292,8 +308,6 @@
                 mergedDestinations = mergedDestinations.concat(destinations);
             });
 
-            console.log(mergedDestinations);
-
             /*<![CDATA[*/
             var planIdx = [[${planIdx}]];
             /*]]>*/
@@ -303,10 +317,7 @@
                 url: "/api/v1/destinations/" + planIdx,
                 data: JSON.stringify(mergedDestinations),
                 success: function(response) {
-                    if (response.isSuccess) {
-                        alert("저장하였습니다.");
-                    }
-                    else {
+                    if (!response.isSuccess) {
                         alert("저장에 실패하였습니다.");
                     }
                 },
@@ -415,15 +426,7 @@
             searchPlaceProcess();
         });
 
-        function openDetailPlaceModal(placeString) {
-            var place = JSON.parse(placeString);
-
-
-        }
-
         function detailPlace(contentId) {
-            console.log('contentId : ' + contentId);
-
             $.ajax({
                 type: "GET",
                 contentType: "application/json",
@@ -438,6 +441,34 @@
                     $('#detail-overview').text(response.overview);
 
                     $('#detailsPlaceModal').modal('show');
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
+        }
+
+        function deleteDestination(visitDate, orderNum) {
+            var data = {
+                visitDate: visitDate,
+                orderNum: orderNum
+            };
+
+            /*<![CDATA[*/
+            var planIdx = [[${planIdx}]];
+            /*]]>*/
+            $.ajax({
+                type: "DELETE",
+                contentType: "application/json",
+                url: "/api/v1/destinations/" + planIdx,
+                data: JSON.stringify(data),
+                success: function(response) {
+                    if (response.isSuccess) {
+                        location.reload(true);
+                    }
+                    else {
+                        alert("목적지 삭제에 실패하였습니다.");
+                    }
                 },
                 error: function(error) {
                     console.error(error);

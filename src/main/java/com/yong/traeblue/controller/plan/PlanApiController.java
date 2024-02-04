@@ -2,6 +2,7 @@ package com.yong.traeblue.controller.plan;
 
 import com.yong.traeblue.config.jwt.JWTUtil;
 import com.yong.traeblue.dto.destination.AddDestinationRequestDto;
+import com.yong.traeblue.dto.destination.DeleteDestinationRequestDto;
 import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
 import com.yong.traeblue.dto.plans.*;
 import com.yong.traeblue.service.PlanService;
@@ -78,6 +79,14 @@ public class PlanApiController {
     @PutMapping("/destinations/{idx}")
     public ResponseEntity<Map<String, Boolean>> updateDestinations(@PathVariable(name = "idx") Long planIdx, @RequestBody List<SaveDestinationRequestDto> requestDtoList) {
         boolean isSuccess = planService.updateDestinations(planIdx, requestDtoList);
+
+        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
+    }
+
+    // 목적지 삭제
+    @DeleteMapping("/destinations/{idx}")
+    public ResponseEntity<Map<String, Boolean>> deleteDestination(@PathVariable(name = "idx") Long planIdx, @RequestBody DeleteDestinationRequestDto requestDto) {
+        boolean isSuccess = planService.deleteDestination(planIdx, requestDto);
 
         return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", isSuccess));
     }

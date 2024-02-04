@@ -160,6 +160,10 @@
     --bs-accordion-btn-focus-box-shadow: null;
 }
 
+.destination-accordion .collapsing {
+    transition: height .3s ease;
+}
+
 .destination-card {
     margin-top: 10px;
     margin-bottom: 10px;
@@ -171,7 +175,6 @@
 
 .destination-card .orderNum {
     margin-bottom: 5px;
-    padding: 0;
     color: #777777;
     font-size: 24px;
     font-weight: 800;
