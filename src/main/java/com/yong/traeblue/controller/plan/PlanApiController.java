@@ -46,6 +46,12 @@ public class PlanApiController {
         return ResponseEntity.ok().body(planService.findById(planIdx));
     }
 
+    // 계획 이름 변경
+    @PatchMapping("/plans/{idx}/title")
+    public ResponseEntity<Map<String, Boolean>> setPlanTitle(@PathVariable(name = "idx") Long planIdx, @RequestBody ChangePlanTitleRequestDto requestDto) {
+        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", planService.setPlanTitle(planIdx, requestDto.getTitle())));
+    }
+
     // 관광지 목록 조회
     @GetMapping("/places")
     public ResponseEntity<SearchPlaceResponseDto> getPlaces(

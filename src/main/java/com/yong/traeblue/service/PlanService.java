@@ -72,13 +72,13 @@ public class PlanService {
     }
 
     // 계획 조회
-    public PlanResponseDto findById(Long idx) {
-        Plan plan = planRepository.findById(idx).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
+    public PlanResponseDto findById(Long planIdx) {
+        Plan plan = planRepository.findById(planIdx).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
 
         List<DestinationResponseDto> destinationResponseDtos = null;
         if (plan.getDestinations() != null) {
             destinationResponseDtos  = plan.getDestinations().stream()
-                    .map(destination  -> DestinationResponseDto.builder()
+                    .map(destination -> DestinationResponseDto.builder()
                             .content_idx(destination.getContentIdx())
                             .title(destination.getTitle())
                             .addr1(destination.getAddr1())
@@ -102,6 +102,15 @@ public class PlanService {
                 .build();
 
         return planResponseDto;
+    }
+
+    // 계획 이름 변경
+    public boolean setPlanTitle(Long planIdx, String newTitle) {
+        Plan plan = planRepository.findById(planIdx).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
+        plan.setTitle(newTitle);
+        planRepository.save(plan);
+
+        return true;
     }
 
     // 관광지 목록 조회

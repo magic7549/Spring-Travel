@@ -33,6 +33,17 @@ operation::plans/find/detail[snippets="response-body"]
 operation::plans/find/detail[snippets="response-fields"]
 
 
+== 계획 이름 변경
+=== Request
+operation::plans/change/title[snippets="http-request"]
+operation::plans/change/title[snippets="path-parameters"]
+operation::plans/change/title[snippets="request-fields"]
+
+=== Response
+operation::plans/change/title[snippets="response-body"]
+operation::plans/change/title[snippets="response-fields"]
+
+
 == 관광지 검색
 === Request
 operation::place/get/list[snippets="http-request"]
@@ -71,3 +82,13 @@ operation::destinations/update[snippets="request-fields"]
 === Response
 operation::destinations/update[snippets="response-body"]
 operation::destinations/update[snippets="response-fields"]
+
+
+== 목적지 삭제
+=== Request
+operation::destinations/delete[snippets="http-request"]
+operation::destinations/delete[snippets="request-fields"]
+
+=== Response
+operation::destinations/delete[snippets="response-body"]
+operation::destinations/delete[snippets="response-fields"]

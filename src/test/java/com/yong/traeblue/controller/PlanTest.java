@@ -6,7 +6,9 @@ import com.yong.traeblue.domain.Destination;
 import com.yong.traeblue.domain.Member;
 import com.yong.traeblue.domain.Plan;
 import com.yong.traeblue.dto.destination.AddDestinationRequestDto;
+import com.yong.traeblue.dto.destination.DeleteDestinationRequestDto;
 import com.yong.traeblue.dto.destination.SaveDestinationRequestDto;
+import com.yong.traeblue.dto.plans.ChangePlanTitleRequestDto;
 import com.yong.traeblue.dto.plans.CreatePlanRequestDto;
 import com.yong.traeblue.dto.plans.SearchPlaceRequestDto;
 import com.yong.traeblue.repository.MemberRepository;
@@ -429,6 +431,50 @@ public class PlanTest {
         }
     }
 
+    @DisplayName("계획 이름 변경 테스트")
+    @Nested
+    class SetPlanTitleTests {
+        @DisplayName("이름 변경 성공")
+        @WithMockUser
+        @Test
+        public void setPlanTitleSuccess() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            Plan plan = planRepository.findByMember(member.get()).get(0);
+
+            ChangePlanTitleRequestDto requestDto = new ChangePlanTitleRequestDto();
+            requestDto.setTitle("Change Title");
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(patch("/api/v1/plans/{idx}/title", plan.getIdx())
+                    .cookie(accessCookie)
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("isSuccess").value(true))
+                    .andDo(document("plans/change/title",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            pathParameters(
+                                    parameterWithName("idx").description("계획 idx")
+                            ),
+                            requestFields(
+                                    fieldWithPath("title").description("변경할 제목")
+                            ),
+                            responseFields(
+                                    fieldWithPath("isSuccess").description("성공 여부")
+                            )
+                    ));
+        }
+    }
+
     @DisplayName("관광지 목록 조회 테스트")
     @Nested
     class GetPlaceListTests {
@@ -653,6 +699,49 @@ public class PlanTest {
                                     fieldWithPath("mapX").description("위도"),
                                     fieldWithPath("mapY").description("경도"),
                                     fieldWithPath("visitDate").description("방문 날짜")
+                            ),
+                            responseFields(
+                                    fieldWithPath("isSuccess").description("성공 여부")
+                            )));
+        }
+    }
+
+    @DisplayName("목적지 삭제 테스트")
+    @Nested
+    class DeleteDestinationTests {
+        @DisplayName("삭제 성공")
+        @WithMockUser
+        @Test
+        public void deleteDestinationSuccess() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            Plan plan = planRepository.findByMember(member.get()).get(0);
+
+            DeleteDestinationRequestDto requestDto = new DeleteDestinationRequestDto();
+            requestDto.setOrderNum(1);
+            requestDto.setVisitDate(1);
+
+            String body = objectMapper.writeValueAsString(requestDto);
+
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(delete("/api/v1/destinations/{idx}", plan.getIdx())
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .content(body)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("$.isSuccess").value(true))
+                    .andDo(document("destinations/delete",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            requestFields(
+                                    fieldWithPath("visitDate").description("방문 날짜"),
+                                    fieldWithPath("orderNum").description("방문 순서")
                             ),
                             responseFields(
                                     fieldWithPath("isSuccess").description("성공 여부")

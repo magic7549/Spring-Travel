@@ -23,7 +23,7 @@
         </div>
     </div>
     <div class="plan-detail-header text-center">
-        <div class="title" th:text="${planDetail.title}"></div>
+        <div class="title"><span th:text="${planDetail.title}"></span> <a href="#" data-bs-toggle="modal" data-bs-target="#changeTitleModal"><i class="bi bi-pencil-square"></i></a></div>
         <div class="date"><span th:text="${planDetail.startDate}"></span> ~ <span th:text="${planDetail.endDate}"></span></div>
     </div>
     <div class="plan-detail-content row row-cols-1 row-cols-md-2">
@@ -100,7 +100,7 @@
         </div>
     </div>
     <!-- Modal -->
-    <div class="modal fade" id="detailsPlaceModal" tabindex="-1">
+    <div class="modal fade" id="detailsPlaceModal" tabindex="-1" aria-labelledby="detailsPlaceModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg modal-dialog-centered">
             <div class="modal-content">
                 <div class="modal-header">
@@ -140,6 +140,23 @@
             </div>
         </div>
     </div>
+    <div class="modal fade" id="changeTitleModal" tabindex="-1" aria-labelledby="changeTitleModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="changeTitleModalLabel">플랜명 변경</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="text" id="changeTitleInput" class="form-control" th:placeholder="${planDetail.title}">
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" onclick="changeTitle()">변경하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
     <script type="text/javascript" th:src="@{//dapi.kakao.com/v2/maps/sdk.js?appkey=} + ${apiKey}"></script>
     <script th:inline="javascript">
         /*<![CDATA[*/
@@ -163,7 +180,7 @@
         var map_container = document.getElementById('map'),
             options = {
                  center: new kakao.maps.LatLng(33.450701, 126.570667),
-                 level: 3
+                 level: 7
             };
         var map = new kakao.maps.Map(map_container, options);
 
@@ -261,6 +278,42 @@
                 polylines[i].setMap(null);
             }
             polylines = [];
+        }
+
+        function changeTitle() {
+            var title = $('#changeTitleInput').val();
+
+            if (title.trim() === "") {
+                alert("바꿀 플랜명을 입력해주세요.");
+                $('#changeTitleInput').val("");
+                return;
+            }
+
+            var data = {
+                title: title
+            };
+
+            /*<![CDATA[*/
+            var planIdx = [[${planIdx}]];
+            /*]]>*/
+            $.ajax({
+                type: "PATCH",
+                contentType: "application/json",
+                url: "/api/v1/plans/" + planIdx + "/title",
+                data: JSON.stringify(data),
+                success: function(response) {
+                    if (response.isSuccess) {
+                        alert("성공적으로 변경 하였습니다.");
+                        location.reload(true);
+                    }
+                    else {
+                        alert("변경에 실패하였습니다.");
+                    }
+                },
+                error: function(error) {
+                    console.error(error);
+                }
+            });
         }
 
         function addDestination(placeString) {

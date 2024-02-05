@@ -51,4 +51,8 @@ public class Plan {
     public void setDestinations(List<Destination> destinations) {
         this.destinations = destinations;
     }
+
+    public void setTitle(String title) {
+        this.title = title;
+    }
 }
