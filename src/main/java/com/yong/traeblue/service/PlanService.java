@@ -113,6 +113,14 @@ public class PlanService {
         return true;
     }
 
+    // 계획 삭제
+    public boolean deletePlan(Long planIdx) {
+        Plan plan = planRepository.findById(planIdx).orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, ErrorCode.NOT_EXISTED_PLAN));
+        planRepository.deleteById(plan.getIdx());
+
+        return true;
+    }
+
     // 관광지 목록 조회
     public SearchPlaceResponseDto getPlaces(String numOfRows, String pageNo, String keyword, String areaCode, String sigunguCode) throws UnsupportedEncodingException {
         String baseUrl = "https://apis.data.go.kr/B551011/KorService1/";

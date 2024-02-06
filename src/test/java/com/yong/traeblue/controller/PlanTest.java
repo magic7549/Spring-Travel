@@ -475,6 +475,62 @@ public class PlanTest {
         }
     }
 
+    @DisplayName("계획 삭제 테스트")
+    @Nested
+    class deletePlanTests {
+        @DisplayName("삭제 성공")
+        @WithMockUser
+        @Test
+        public void deletePlanSuccess() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            Plan plan = planRepository.findByMember(member.get()).get(0);
+
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(delete("/api/v1/plans/{idx}", plan.getIdx())
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isOk())
+                    .andExpect(jsonPath("isSuccess").value(true))
+                    .andDo(document("plans/delete",
+                            Preprocessors.preprocessRequest(prettyPrint()),
+                            Preprocessors.preprocessResponse(prettyPrint()),
+                            pathParameters(
+                                    parameterWithName("idx").description("계획 idx")
+                            ),
+                            responseFields(
+                                    fieldWithPath("isSuccess").description("성공 여부")
+                            )
+                    ));
+        }
+
+        @DisplayName("삭제 실패")
+        @WithMockUser
+        @Test
+        public void deletePlanFail() throws Exception {
+            //given
+            Optional<Member> member = memberRepository.findByUsername("test");
+            Plan plan = planRepository.findByMember(member.get()).get(0);
+
+            String accessToken = jwtUtil.createAccess(member.get().getIdx(), "test", "ROLE_USER");
+            Cookie accessCookie = new Cookie("access", accessToken);
+
+            //when
+            ResultActions result = mockMvc.perform(delete("/api/v1/plans/{idx}", plan.getIdx() + 1)
+                    .cookie(accessCookie));
+
+            //then
+            result
+                    .andExpect(status().isBadRequest())
+                    .andExpect(jsonPath("$.code").value("NOT_EXISTED_PLAN"));
+        }
+    }
+
     @DisplayName("관광지 목록 조회 테스트")
     @Nested
     class GetPlaceListTests {

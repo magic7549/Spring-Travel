@@ -19,7 +19,7 @@
     <div class="plan-detail-top-menu row">
         <div class="col-6 text-start"><a th:href="@{/plans}" class="back-href"><i class="bi bi-arrow-left"></i> 목록으로</a></div>
         <div class="col-6 text-end">
-            <button type="button" class="btn btn-danger">삭제</button>
+            <button type="button" class="btn btn-danger" onclick="deletePlan()">삭제</button>
         </div>
     </div>
     <div class="plan-detail-header text-center">
@@ -202,6 +202,7 @@
         $(".accordion-body").each(function() {
             $(this).sortable({
                 axis: "y",
+                containment: "parent",
                 start: function(event, ui) {
                     // 드래그 시작 시 호출
                 },
@@ -314,6 +315,32 @@
                     console.error(error);
                 }
             });
+        }
+
+        function deletePlan() {
+            var isConfirmed = confirm('정말로 삭제하시겠습니까?');
+            if (isConfirmed) {
+                /*<![CDATA[*/
+                var planIdx = [[${planIdx}]];
+                /*]]>*/
+                $.ajax({
+                    type: 'DELETE',
+                    url: '/api/v1/plans/' + planIdx,
+                    success: function (response) {
+                        if (response.isSuccess) {
+                            alert('계획을 삭제하였습니다.');
+                            window.location.href = '/plans';
+                        }
+                        else {
+                            alert('삭제에 실패하였습니다.');
+                            window.location.href = '/plans';
+                        }
+                    },
+                    error: function (error) {
+                        alert(error.responseJSON.msg);
+                    }
+                });
+            }
         }
 
         function addDestination(placeString) {

@@ -44,6 +44,16 @@ operation::plans/change/title[snippets="response-body"]
 operation::plans/change/title[snippets="response-fields"]
 
 
+== 계획 삭제
+=== Request
+operation::plans/delete[snippets="http-request"]
+operation::plans/delete[snippets="path-parameters"]
+
+=== Response
+operation::plans/delete[snippets="response-body"]
+operation::plans/delete[snippets="response-fields"]
+
+
 == 관광지 검색
 === Request
 operation::place/get/list[snippets="http-request"]

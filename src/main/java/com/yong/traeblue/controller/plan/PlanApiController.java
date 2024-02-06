@@ -52,6 +52,12 @@ public class PlanApiController {
         return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", planService.setPlanTitle(planIdx, requestDto.getTitle())));
     }
 
+    // 계획 삭제
+    @DeleteMapping("/plans/{idx}")
+    public ResponseEntity<Map<String, Boolean>> deletePlan(@PathVariable(name = "idx") Long planIdx) {
+        return ResponseEntity.ok().body(Collections.singletonMap("isSuccess", planService.deletePlan(planIdx)));
+    }
+
     // 관광지 목록 조회
     @GetMapping("/places")
     public ResponseEntity<SearchPlaceResponseDto> getPlaces(
