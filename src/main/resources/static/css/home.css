@@ -1,24 +1,57 @@
 .home-title-container {
+    padding: 0;
     height: 800px;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%), url(/img/ocean.jpg);
+    background-size: cover;
 }
 
 .home-title-text {
     color: #FFF;
-    font-family: Inter;
     font-size: 64px;
-    font-style: normal;
     font-weight: 700;
-    line-height: normal;
     letter-spacing: 5.12px;
 }
 
 .home-title-start-btn {
     margin-top: 20px;
+}
 
-    color: #FFF;
-    font-family: Inter;
+.home-title-start-btn a{
+    color: #3549FF;
     font-size: 40px;
-    font-style: normal;
     font-weight: 500;
-    line-height: normal;
+    text-decoration-line: none;
+}
+
+.home-myplan-container {
+    padding-top: 40px;
+    padding-bottom: 40px;
+}
+
+.home-myplan-container .title {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.home-myplan-container hr {
+    margin-right: 10px;
+    width: 100px;
+}
+
+.home-myplan-container span {
+    color: #000;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.home-myplan-container .description {
+    margin-top: 20px;
+    text-align: right;
+
+    font-size: 32px;
+    font-weight: 600;
+}
+.home-myplan-container .place-lsit {
+    margin-top: 20px;
 }

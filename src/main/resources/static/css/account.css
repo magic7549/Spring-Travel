@@ -2,6 +2,7 @@
     width: 700px;
 
     margin-top: 80px;
+    margin-bottom: 80px;
 
     border-radius: 6px;
     border: 2px solid #C8C8C8;
@@ -111,7 +112,8 @@
 }
 
 .mypage-container {
-    margin-top: 80px;
+    padding-top: 80px;
+    padding-bottom: 80px;
 }
 
 .mypage-container .mypage-menu-title {

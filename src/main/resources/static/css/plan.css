@@ -1,6 +1,5 @@
 /* =================== plan list =================== */
 .plan-list-title {
-    margin-top: 40px;
     margin-bottom: 40px;
     color: #000;
     text-align: center;
@@ -116,7 +115,6 @@
 
 /* =================== plan detail =================== */
 .plan-detail-top-menu {
-    margin-top: 40px;
     margin-bottom: 20px;
 }
 

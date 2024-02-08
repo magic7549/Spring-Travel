@@ -16,18 +16,25 @@ js end
 -->
 
 <!-- content start -->
-<div layout:fragment="content" class="container-fluid home-title-container" th:style="'background: linear-gradient(0deg, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.4) 100%), url(/img/ocean.jpg); background-size: cover;'">
-    <div class="container-xxl" style="height: 100%;">
-        <div class="d-flex align-items-center" style="height: 100%;">
-            <div>
-                <div class="home-title-text">
-                    시원한 여행 계획<br>트래<span style="color: #3549FF;">블루</span>와 함께
-                </div>
-                <div class="home-title-start-btn">
-                    여행 떠나기 →
+<div layout:fragment="content">
+    <div class="container-fluid home-title-container">
+        <div style="width: 100%; height: 100%; backdrop-filter: blur(3px);">
+            <div class="container-xxl" style="height: 100%;">
+                <div class="d-flex align-items-center" style="height: 100%;">
+                    <div>
+                        <div class="home-title-text">
+                            시원한 여행 계획<br>트래<span style="color: #3549FF;">블루</span>와 함께
+                        </div>
+                        <div class="home-title-start-btn"><a th:href="@{/plans}">여행 떠나기 →</a></div>
+                    </div>
                 </div>
             </div>
         </div>
+    </div>
+    <div class="container-xxl home-myplan-container">
+        <div class="title"><hr /><span>마이플랜</span></div>
+        <div class="description">한국 관광공사가 제공한<br>12,836개의 관광지를 통해 다양한 계획을 세워보세요!</div>
+        <div class="place-lsit"><img src="/img/place list.png" style="width: 100%"/></div>
     </div>
 </div>
 <!-- content end -->
